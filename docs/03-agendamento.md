@@ -62,7 +62,11 @@ Respostas:
 | 502 | `{ ok:false, code:"UPSTREAM" }` | Erro + WhatsApp |
 
 Anti-spam: honeypot `website` e `startedAt` < 4s → o PHP responde `ok:true` sem agendar.
-Rate limit (por IP): slots 60/10 min · book 5/hora.
+Rate limit (por IP, com `flock`): slots 60/10 min · book 5/hora.
+
+Só para desenvolvimento: `?simulate=409|422|429|502` no `/api/agenda.php` devolve a resposta correspondente. Funciona apenas com Host `localhost` **e** cliente em loopback; em produção é ignorado.
+
+Validação: `agenda.php` (`clean()`) e `Code.gs` (`sanitize_`/`validate_`) aplicam as mesmas regras. Se mudar uma, mude a outra. Textos de planilha que começam com `= + - @` ganham prefixo `'`.
 
 ### PHP ↔ Apps Script
 - Slots: `GET {URL}?action=slots&from&to&secret`

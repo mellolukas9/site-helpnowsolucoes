@@ -21,6 +21,7 @@ O design foi aprovado em canvas (versão v3). Refinar execução é bem-vindo; m
 Ritmo das seções (alternância forte de contraste): hero navy → Reforma **ciano** → Na prática cinza-claro → Seu momento navy → Segmentos branco → CTA **azul** → footer navy.
 
 ## Tipografia
+- Fontes hospedadas em `assets/fonts/*.woff2` (subset latino, variáveis); `@font-face` no topo do `styles.css`.
 - **Sora** 700/800 — títulos. Tracking negativo (-0.035 a -0.045em), line-height 1.0–1.05.
 - **Manrope** 400–800 — texto e botões.
 - **JetBrains Mono** — kickers, tags, rótulos (caixa alta, tracking 0.08–0.1em).

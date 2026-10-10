@@ -56,7 +56,16 @@ php -S localhost:8000 -t public_html tools/dev-router.php
 
 ## Status (10/10/2026)
 - [x] Home e /agendamento implementados (HTML/CSS/JS), testados em modo mock (desktop e 390px).
-- [x] Proxy PHP com validação, rate limit e mock.
-- [x] Apps Script completo (slots, book com Meet, planilha, e-mails, lembrete 24h, setup).
-- [ ] Configurar ambiente real (ver `docs/04-deploy-e-ambiente.md` e o guia HTML).
+- [x] Proxy PHP com validação, rate limit (flock) e mock; `?simulate=409|422|429|502` só em localhost.
+- [x] Apps Script completo (slots, book com Meet, planilha, e-mails, lembrete 24h, setup); fórmulas neutralizadas e fallback por e-mail se a planilha falhar.
+- [x] Revisão de segurança/robustez (PHP e Apps Script com as mesmas regras de validação) — contrato da API inalterado.
+- [x] Fluxo testado com PHP 8.3 real: sucesso, 409, 422, 429, 502, erro de rede, honeypot, concorrência do rate limit.
+- [x] `og-image.png` (1200×630) gerada.
+- [x] Fontes hospedadas em `assets/fonts` (woff2 latin); Lighthouse mobile local 99/100/100/100 (home, agendamento, política).
+- [x] Acessibilidade: contraste AA, ordem de headings, skip link em todas as páginas, alvos ≥ 44px.
+- [ ] Configurar ambiente real (ver `docs/04-deploy-e-ambiente.md` e o guia HTML) e testar ponta a ponta em produção.
 - [ ] Pendências em `docs/05-backlog.md`.
+
+## Testes locais com PHP
+PHP 8.3 precisa de `mbstring` e `curl` habilitados no php.ini. Simulação de erros (só localhost, ignorada em produção):
+`POST /api/agenda.php?action=book&simulate=409` (ou 422, 429, 502).
