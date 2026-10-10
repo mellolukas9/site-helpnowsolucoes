@@ -14,14 +14,43 @@
   }
 
   if (toggle && nav) {
-    var setOpen = function (open) {
+    var root = document.documentElement;
+    var firstLink = nav.querySelector('a');
+    var setOpen = function (open, restoreFocus) {
+      if (open === nav.classList.contains('is-open')) return;
       nav.classList.toggle('is-open', open);
+      root.classList.toggle('nav-open', open); // trava o scroll do fundo e esconde o WhatsApp
       toggle.setAttribute('aria-expanded', String(open));
       toggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+      if (open && firstLink) firstLink.focus({ preventScroll: true });
+      if (!open && restoreFocus) toggle.focus({ preventScroll: true });
     };
-    toggle.addEventListener('click', function () { setOpen(!nav.classList.contains('is-open')); });
-    nav.addEventListener('click', function (e) { if (e.target.closest('a')) setOpen(false); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+    toggle.addEventListener('click', function () { setOpen(!nav.classList.contains('is-open'), true); });
+    nav.addEventListener('click', function (e) { if (e.target.closest('a')) setOpen(false, true); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false, true); });
+    // toque fora do menu fecha (sem roubar o foco do que foi tocado)
+    document.addEventListener('click', function (e) {
+      if (nav.classList.contains('is-open') && !nav.contains(e.target) && !toggle.contains(e.target)) setOpen(false, false);
+    });
+    // Tab para fora do menu aberto também fecha
+    nav.addEventListener('focusout', function (e) {
+      if (e.relatedTarget && !nav.contains(e.relatedTarget) && e.relatedTarget !== toggle) setOpen(false, false);
+    });
+    // ao ampliar para o layout de desktop, o menu volta ao normal
+    var desktop = window.matchMedia('(min-width: 1024px)');
+    var onDesktop = function () { if (desktop.matches) setOpen(false, false); };
+    if (desktop.addEventListener) desktop.addEventListener('change', onDesktop); else desktop.addListener(onDesktop);
+  }
+
+  /* ---------- WhatsApp flutuante: some sobre o CTA final e o rodapé ---------- */
+  var wa = document.querySelector('.wa-float');
+  if (wa && 'IntersectionObserver' in window) {
+    var covering = new Set();
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) covering.add(en.target); else covering.delete(en.target); });
+      wa.classList.toggle('is-hidden', covering.size > 0);
+    });
+    document.querySelectorAll('.cta, .site-footer').forEach(function (el) { io.observe(el); });
   }
 
   /* ---------- Tablists acessíveis (setas do teclado) ---------- */
@@ -44,7 +73,7 @@
         t.tabIndex = on ? 0 : -1;
       });
       if (focus) tabs[i].focus();
-      onSelect(i, tabs[i]);
+      onSelect(i, tabs[i], focus);
     }
   }
 
@@ -78,7 +107,9 @@
   if (panel) {
     var stabs = Array.prototype.slice.call(document.querySelectorAll('.stages [role="tab"]'));
     var f = function (name) { return panel.querySelector('[data-field="' + name + '"]'); };
-    wireTablist(stabs, function (i, tab) {
+    var mobile = window.matchMedia('(max-width: 767px)');
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    wireTablist(stabs, function (i, tab, viaKeyboard) {
       var m = MOMENTOS[i];
       f('tag').textContent = m.tag;
       f('title').textContent = m.title;
@@ -95,6 +126,8 @@
         ul.appendChild(li);
       });
       panel.setAttribute('aria-labelledby', tab.id);
+      // no mobile, leva ao início do painel (o scroll-margin do CSS desconta o header sticky)
+      if (mobile.matches && !viaKeyboard) panel.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
     });
   }
 

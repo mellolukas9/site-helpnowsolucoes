@@ -18,7 +18,7 @@
 
   <link rel="preload" href="/assets/fonts/sora.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/css/styles.css?v=2">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=3">
 </head>
 <body class="ag-body">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -59,9 +59,9 @@
     <section class="booking" aria-labelledby="booking-title">
       <h2 id="booking-title" class="sr-only">Agendar diagnóstico</h2>
       <ol class="stepper" aria-label="Etapas do agendamento">
-        <li class="is-active" data-step-ind="1"><span class="stepper__dot">1</span>Data e horário</li>
-        <li data-step-ind="2"><span class="stepper__dot">2</span>Seus dados</li>
-        <li data-step-ind="3"><span class="stepper__dot">3</span>Confirmação</li>
+        <li class="is-active" data-step-ind="1"><span class="stepper__dot">1</span><span class="stepper__label">Data e horário</span></li>
+        <li data-step-ind="2"><span class="stepper__dot">2</span><span class="stepper__label">Seus dados</span></li>
+        <li data-step-ind="3"><span class="stepper__dot">3</span><span class="stepper__label">Confirmação</span></li>
       </ol>
 
       <div id="ag-alert" role="alert" aria-live="assertive"></div>
@@ -151,11 +151,11 @@
 
 <footer class="ag-foot">
   <div class="container">
-    <span>© 2026 HelpNow Soluções · CNPJ 49.739.083/0001-24 · <a href="mailto:contato@helpnowsolucoes.com.br">contato@helpnowsolucoes.com.br</a></span>
+    <span>© 2026 HelpNow Soluções · <span class="nowrap">CNPJ 49.739.083/0001-24</span> · <a href="mailto:contato@helpnowsolucoes.com.br">contato@helpnowsolucoes.com.br</a></span>
     <span>Juntos vamos <strong style="color:var(--blue-600)">mais longe!</strong> · <a href="/politica-de-privacidade">Privacidade</a></span>
   </div>
 </footer>
 
-<script src="/assets/js/agendamento.js?v=2" defer></script>
+<script src="/assets/js/agendamento.js?v=3" defer></script>
 </body>
 </html>

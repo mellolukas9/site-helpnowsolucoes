@@ -63,6 +63,7 @@ php -S localhost:8000 -t public_html tools/dev-router.php
 - [x] `og-image.png` (1200×630) gerada.
 - [x] Fontes hospedadas em `assets/fonts` (woff2 latin); Lighthouse mobile local 99/100/100/100 (home, agendamento, política).
 - [x] Acessibilidade: contraste AA, ordem de headings, skip link em todas as páginas, alvos ≥ 44px.
+- [x] Revisão mobile (10/10): faixas cobrem a seção, carrossel em "Na prática", "Seu momento" 2×2, menu com X/scroll lock/foco, WhatsApp some sobre CTA/rodapé, home em 390px de ~9.900px para ~6.300px. CSS/JS/HTML com `?v=3`.
 - [ ] Configurar ambiente real (ver `docs/04-deploy-e-ambiente.md` e o guia HTML) e testar ponta a ponta em produção.
 - [ ] Pendências em `docs/05-backlog.md`.
 

@@ -106,7 +106,7 @@
     el.prev.disabled = week <= MIN_WEEK;
     el.next.disabled = week >= MAX_WEEK;
     var mid = addDays(week, 2);
-    el.weekLabel.textContent = fmtMonth.format(toUTC(mid)).replace(' de ', ' ').toUpperCase() + ' · ESCOLHA O DIA';
+    el.weekLabel.innerHTML = fmtMonth.format(toUTC(mid)).replace(' de ', ' ').toUpperCase() + '<span class="ag-month__hint"> · ESCOLHA O DIA</span>';
 
     var cached = cache[week];
     if (cached && !opts.force && Date.now() - cached.at < 60000) { applyWeek(cached.days); return Promise.resolve(); }
