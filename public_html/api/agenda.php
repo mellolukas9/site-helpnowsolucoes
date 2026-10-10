@@ -16,6 +16,10 @@
  */
 declare(strict_types=1);
 
+// Erros/avisos do PHP nunca podem vazar para o JSON de resposta.
+ini_set('display_errors', '0');
+date_default_timezone_set('America/Sao_Paulo');
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, max-age=0');
 header('X-Content-Type-Options: nosniff');
@@ -50,19 +54,30 @@ function client_ip(): string {
     return (string)($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
 }
 
-/** Rate limit simples por IP, em arquivo temporário. */
+/**
+ * Rate limit simples por IP, em arquivo temporário.
+ * O flock cobre leitura + escrita: sem ele, requisições simultâneas leem o mesmo estado
+ * e furam o limite. Se o arquivo não puder ser aberto, deixa passar (o Apps Script ainda valida).
+ */
 function rate_limit(string $bucket, int $max, int $windowSec): bool {
     $file = sys_get_temp_dir() . '/helpnow_rl_' . $bucket . '_' . md5(client_ip()) . '.json';
+    $fh = @fopen($file, 'c+');
+    if ($fh === false) return true;
+    if (!flock($fh, LOCK_EX)) { fclose($fh); return true; }
     $now  = time();
-    $hits = [];
-    if (is_file($file)) {
-        $hits = json_decode((string)@file_get_contents($file), true) ?: [];
+    $hits = json_decode((string)stream_get_contents($fh), true);
+    $hits = is_array($hits) ? array_values(array_filter($hits, fn($t) => is_int($t) && $t > $now - $windowSec)) : [];
+    $allowed = count($hits) < $max;
+    if ($allowed) {
+        $hits[] = $now;
+        ftruncate($fh, 0);
+        rewind($fh);
+        fwrite($fh, json_encode($hits));
+        fflush($fh);
     }
-    $hits = array_values(array_filter($hits, fn($t) => $t > $now - $windowSec));
-    if (count($hits) >= $max) return false;
-    $hits[] = $now;
-    @file_put_contents($file, json_encode($hits), LOCK_EX);
-    return true;
+    flock($fh, LOCK_UN);
+    fclose($fh);
+    return $allowed;
 }
 
 /** Aceita só chamadas do próprio site (quando o navegador informa a origem). */
@@ -86,10 +101,33 @@ function valid_date(string $d): bool {
     return checkdate($m, $day, $y);
 }
 
-function clean(mixed $v, int $max): string {
-    $s = trim(strip_tags((string)$v));
-    $s = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', '', $s) ?? '';
-    return mb_substr($s, 0, $max);
+/** Texto de uma linha: sem tags, sem controle, espaços colapsados. Mesma regra do sanitize_ do Code.gs. */
+function clean(mixed $v, int $max, bool $multiline = false): string {
+    if (!is_scalar($v)) return '';
+    $s = strip_tags((string)$v);
+    $s = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $s) ?? '';
+    $s = str_replace(['<', '>'], '', $s);
+    $s = $multiline ? preg_replace('/[ \t]+/u', ' ', str_replace("\r", '', $s)) : preg_replace('/\s+/u', ' ', $s);
+    return mb_substr(trim((string)$s), 0, $max);
+}
+
+/**
+ * Simulação de respostas (?simulate=409|422|429|502) para testar o front sem o Google.
+ * SÓ funciona em localhost: exige Host local E cliente em loopback. Em produção é ignorado.
+ */
+function simulate_response(): void {
+    $sim = (string)($_GET['simulate'] ?? '');
+    if ($sim === '') return;
+    $host  = (string)($_SERVER['HTTP_HOST'] ?? '');
+    $local = preg_match('/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/', $host) === 1
+          && in_array(client_ip(), ['127.0.0.1', '::1'], true);
+    if (!$local) return;
+    switch ($sim) {
+        case '409': respond(409, ['ok' => false, 'code' => 'SLOT_TAKEN']);
+        case '422': respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => ['email' => 'Informe um e-mail válido.', 'whatsapp' => 'Informe o WhatsApp com DDD.']]);
+        case '429': respond(429, ['ok' => false, 'code' => 'RATE_LIMIT']);
+        case '502': respond(502, ['ok' => false, 'code' => 'UPSTREAM']);
+    }
 }
 
 /** Chama o Apps Script. O /exec responde 302 → googleusercontent; o cURL segue como GET (correto). */
@@ -147,6 +185,7 @@ $action = (string)($_GET['action'] ?? '');
 $method = (string)($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
 if ($action === 'slots' && $method === 'GET') {
+    simulate_response();
     check_origin($ORIGINS, false);
     if (!rate_limit('slots', 60, 600)) respond(429, ['ok' => false, 'code' => 'RATE_LIMIT']);
 
@@ -164,15 +203,18 @@ if ($action === 'slots' && $method === 'GET') {
 }
 
 if ($action === 'book' && $method === 'POST') {
+    simulate_response();
     check_origin($ORIGINS, true);
     if (!rate_limit('book', 5, 3600)) respond(429, ['ok' => false, 'code' => 'RATE_LIMIT']);
 
-    $in = json_decode((string)file_get_contents('php://input'), true);
+    $in = json_decode((string)file_get_contents('php://input', false, null, 0, 20000), true);
     if (!is_array($in)) respond(422, ['ok' => false, 'code' => 'VALIDATION']);
 
     // Anti-robô: honeypot preenchido ou envio rápido demais → finge sucesso, não agenda.
     $startedAt = (int)($in['startedAt'] ?? 0);
-    if (!empty($in['website']) || ($startedAt > 0 && (int)(microtime(true) * 1000) - $startedAt < 4000)) {
+    // (diferença negativa = relógio do cliente adiantado: não é sinal de robô)
+    $elapsed = (int)(microtime(true) * 1000) - $startedAt;
+    if (!empty($in['website']) || ($startedAt > 0 && $elapsed >= 0 && $elapsed < 4000)) {
         respond(200, ['ok' => true, 'eventId' => '', 'meetLink' => '']);
     }
 
@@ -185,7 +227,7 @@ if ($action === 'book' && $method === 'POST') {
         'email'    => mb_strtolower(clean($in['email'] ?? '', 160)),
         'erp'      => clean($in['erp'] ?? '', 40),
         'canal'    => clean($in['canal'] ?? '', 40),
-        'problema' => clean($in['problema'] ?? '', 1500),
+        'problema' => clean($in['problema'] ?? '', 1500, true),
         'origem'   => clean($in['origem'] ?? '', 40),
         'assunto'  => clean($in['assunto'] ?? '', 40),
         'momento'  => clean($in['momento'] ?? '', 4),
@@ -201,7 +243,7 @@ if ($action === 'book' && $method === 'POST') {
     if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Informe um e-mail válido.';
     if (!in_array($data['erp'], ERP_OPTIONS, true)) $errors['erp'] = 'Selecione uma opção.';
     if (!in_array($data['canal'], CANAL_OPTIONS, true)) $errors['canal'] = 'Selecione uma opção.';
-    if (empty($in['consent'])) $errors['consent'] = 'Consentimento obrigatório.';
+    if (($in['consent'] ?? false) !== true) $errors['consent'] = 'Consentimento obrigatório.';
     if ($errors) respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => $errors]);
 
     if ($MOCK) respond(200, ['ok' => true, 'eventId' => 'mock-' . time(), 'meetLink' => 'https://meet.google.com/abc-defg-hij', 'mock' => true]);

@@ -191,7 +191,7 @@ function book_(b) {
     const busy = getBusy_(data.date, addDays_(data.date, 1));
     if (overlaps_(start, end, busy)) return { ok: false, code: 'SLOT_TAKEN' };
 
-    const event = Calendar.Events.insert({
+    let event = Calendar.Events.insert({
       summary: 'Diagnóstico HelpNow — ' + data.empresa,
       description: eventDescription_(data),
       start: { dateTime: isoLocal_(data.date, h), timeZone: CONFIG.TIMEZONE },
@@ -203,16 +203,20 @@ function book_(b) {
       guestsCanInviteOthers: false
     }, CONFIG.CALENDAR_ID, { conferenceDataVersion: 1, sendUpdates: 'all' });
 
+    // O horário já está ocupado a partir daqui: invalida o cache antes de qualquer outra coisa.
+    bumpCache_();
     const meetLink = event.hangoutLink || meetFromConference_(event) || '';
+    const when = longDate_(data.date) + ', das ' + data.time + ' às ' + pad_(h + 1) + ':00 (horário de Brasília)';
 
-    sheet_().appendRow([
+    // O evento já existe e o cliente foi convidado. Se a planilha falhar, tenta de novo e,
+    // em último caso, avisa o comercial@ por e-mail com os dados do lead (nada se perde).
+    const saved = saveLead_([
       new Date(), data.date, data.time, data.nome, data.empresa, data.whatsapp, data.email, data.erp,
       data.canal, data.origem, [data.assunto, data.momento && ('momento ' + data.momento)].filter(String).join(' · '),
       data.problema, event.id, meetLink, 'Agendado', ''
     ]);
-    bumpCache_();
+    if (!saved) safe_(function () { sendLeadFallback_(data, when, meetLink, event.htmlLink); });
 
-    const when = longDate_(data.date) + ', das ' + data.time + ' às ' + pad_(h + 1) + ':00 (horário de Brasília)';
     safe_(function () { sendClientConfirmation_(data, when, meetLink); });
     safe_(function () { sendInternalNotice_(data, when, meetLink, event.htmlLink); });
 
@@ -222,22 +226,63 @@ function book_(b) {
   }
 }
 
+/** Grava o lead na planilha com até 3 tentativas. Retorna true se gravou. */
+function saveLead_(row) {
+  const safeRow = row.map(cell_);
+  for (let i = 1; i <= 3; i++) {
+    try {
+      sheet_().appendRow(safeRow);
+      return true;
+    } catch (err) {
+      console.error('Falha ao gravar lead (tentativa ' + i + ')', err && err.stack || err);
+      if (i < 3) Utilities.sleep(700 * i);
+    }
+  }
+  return false;
+}
+
+/** E-mail de emergência: o evento existe mas a linha não entrou na planilha. */
+function sendLeadFallback_(d, when, meet, eventLink) {
+  const rows = [['Quando', when], ['Nome', d.nome], ['Empresa', d.empresa], ['WhatsApp', d.whatsapp], ['E-mail', d.email],
+    ['ERP', d.erp], ['Como nos encontrou', d.canal], ['Origem (URL)', d.origem || '—'], ['Assunto/Momento', [d.assunto, d.momento].filter(String).join(' · ') || '—'],
+    ['Problema', d.problema || '—'], ['Meet', meet || '—']];
+  const table = '<table style="border-collapse:collapse;width:100%;font-size:14px">' + rows.map(function (r) {
+    return '<tr><td style="padding:6px 10px;border-bottom:1px solid #DCE2EF;color:#46516E;white-space:nowrap;vertical-align:top">' + r[0] + '</td><td style="padding:6px 10px;border-bottom:1px solid #DCE2EF">' + esc_(r[1]) + '</td></tr>';
+  }).join('') + '</table>';
+  const html = emailLayout_('Lead NÃO gravado na planilha',
+    '<p style="margin:0 0 14px">O evento foi criado na agenda e o cliente foi convidado, mas a gravação na planilha falhou após 3 tentativas. Copie os dados abaixo para a aba Leads.</p>' + table +
+    (eventLink ? '<p style="margin:16px 0 0"><a href="' + eventLink + '" style="color:#2456F0">Abrir evento na agenda</a></p>' : ''));
+  MailApp.sendEmail({ to: CONFIG.NOTIFY_EMAIL, subject: 'ATENÇÃO: lead sem registro na planilha — ' + d.empresa + ' — ' + when, htmlBody: html, name: 'Site HelpNow', replyTo: d.email });
+}
+
+/** Neutraliza fórmulas: texto que começa com = + - @ (ou tab/CR) ganha prefixo ' e vira texto puro. */
+function cell_(v) {
+  return (typeof v === 'string' && /^[=+\-@\t\r]/.test(v)) ? "'" + v : v;
+}
+
+/** Mesma regra do clean() de api/agenda.php: sem < >, controle removido, espaços colapsados. */
 function sanitize_(b) {
-  const s = function (v, max) { return String(v == null ? '' : v).replace(/[<>]/g, '').trim().slice(0, max); };
+  const s = function (v, max, multiline) {
+    let t = String(v == null ? '' : v).replace(/<[^>]*>/g, '').replace(/[<>]/g, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    t = multiline ? t.replace(/\r/g, '').replace(/[ \t]+/g, ' ') : t.replace(/\s+/g, ' ');
+    return t.trim().slice(0, max);
+  };
   return {
     date: s(b.date, 10), time: s(b.time, 5), nome: s(b.nome, 120), empresa: s(b.empresa, 120),
     whatsapp: s(b.whatsapp, 20), email: s(b.email, 160).toLowerCase(), erp: s(b.erp, 40), canal: s(b.canal, 40),
-    problema: s(b.problema, 1500), origem: s(b.origem, 40), assunto: s(b.assunto, 40), momento: s(b.momento, 4)
+    problema: s(b.problema, 1500, true), origem: s(b.origem, 40), assunto: s(b.assunto, 40), momento: s(b.momento, 4)
   };
 }
 
 function validate_(d) {
   const f = {};
+  if (!isDate_(d.date)) f.date = 'Data inválida.';
+  if (!/^\d{2}:00$/.test(d.time) || CONFIG.SLOT_HOURS.indexOf(parseInt(d.time, 10)) < 0) f.time = 'Horário inválido.';
   if (d.nome.length < 3) f.nome = 'Informe seu nome completo.';
   if (d.empresa.length < 2) f.empresa = 'Informe o nome da empresa.';
   const digits = d.whatsapp.replace(/\D/g, '');
   if (digits.length < 10 || digits.length > 11) f.whatsapp = 'Informe o WhatsApp com DDD.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) f.email = 'Informe um e-mail válido.';
+  if (!/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}$/.test(d.email)) f.email = 'Informe um e-mail válido.';
   if (ERP_OPTIONS.indexOf(d.erp) < 0) f.erp = 'Selecione uma opção.';
   if (CANAL_OPTIONS.indexOf(d.canal) < 0) f.canal = 'Selecione uma opção.';
   return f;
