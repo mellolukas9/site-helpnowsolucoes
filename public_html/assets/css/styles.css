@@ -132,7 +132,7 @@ main:focus { outline: none; }
 .site-header.is-scrolled { box-shadow: 0 10px 30px rgba(0,0,0,.25); }
 .site-header .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: var(--header-h); }
 .nav { display: flex; align-items: center; gap: 26px; font-size: 15px; font-weight: 600; white-space: nowrap; }
-.nav a:not(.btn) { color: var(--mist-300); text-decoration: none; padding: 6px 0; }
+.nav a:not(.btn) { color: var(--mist-300); text-decoration: none; padding:  12px 0; min-height: 44px; display: inline-flex; align-items: center; }
 .nav a:not(.btn):hover { color: var(--white); }
 .nav-toggle {
   display: none; width: 48px; height: 48px; border-radius: 12px; border: 1px solid rgba(255,255,255,.2);
@@ -331,11 +331,11 @@ main:focus { outline: none; }
 .footer__slogan strong { color: var(--cyan-400); }
 .footer__col { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 10px; font-size: 15px; }
 .footer__col h2 { font-family: var(--font-body); font-size: 15px; font-weight: 800; color: var(--white); margin-bottom: 4px; }
-.footer__col a { color: var(--mist-300); text-decoration: none; overflow-wrap: anywhere; }
+.footer__col a { color: var(--mist-300); text-decoration: none; overflow-wrap: anywhere; display: flex; align-items: center; min-height: 44px; }
 .footer__col a:hover { color: var(--white); text-decoration: underline; }
 .footer__bottom { border-top: 1px solid rgba(255,255,255,.08); }
 .footer__bottom .container { padding-block: 20px 32px; font-size: 13px; color: #8A94AE; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
-.footer__bottom a { color: #8A94AE; }
+.footer__bottom a { color: #8A94AE; display: inline-block; padding-block: 12px; }
 
 /* ---------- WhatsApp flutuante ---------- */
 .wa-float {
@@ -353,6 +353,8 @@ main:focus { outline: none; }
 .ag-header { background: var(--white); border-bottom: 1px solid var(--line); }
 .ag-header .container { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; min-height: 68px; }
 .ag-header .brand svg { width: 40px; height: 40px; }
+.ag-header .brand { min-height: 44px; }
+.ag-footer-bar a { display: inline-block; padding-block: 12px; }
 .ag-header .wordmark { font-size: 20px; }
 .ag-header__tag { font-family: var(--font-mono); font-size: 12px; color: var(--ink-600); border-left: 1px solid var(--line); padding-left: 12px; }
 .ag-header__wa { font-size: 14px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
