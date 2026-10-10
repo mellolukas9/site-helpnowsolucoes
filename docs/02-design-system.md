@@ -10,7 +10,7 @@ O design foi aprovado em canvas (versão v3). Refinar execução é bem-vindo; m
 | `--navy-900` | `#0A1433` | texto principal; fundo de "Seu momento" |
 | `--blue-500` | `#2E6BFF` | cor da marca: CTAs, "NOW", destaques |
 | `--blue-600` | `#2456F0` | azul sobre fundo claro (logo claro, links) |
-| `--cyan-400` | `#3DDCFF` | acento: Reforma Tributária, tags, detalhes no escuro |
+| `--cyan-400` | `#3DDCFF` | acento: Reforma Tributária (cards por área em Sora 800, `ms--dark` no primeiro), tags, detalhes no escuro |
 | `--orange-500` | `#FF7A45` | **somente** estado "Como é hoje / Gargalo" |
 | `--silver-100` | `#E6EBF5` | haste clara do logo |
 | `--gray-50` | `#F2F4FA` | fundos claros |

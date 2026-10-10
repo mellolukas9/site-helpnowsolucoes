@@ -78,7 +78,7 @@ Validação: `agenda.php` (`clean()`) e `Code.gs` (`sanitize_`/`validate_`) apli
 | Parâmetro | Efeito |
 |---|---|
 | `origem=universo-totvs\|linkedin\|instagram\|google` | Pré-seleciona "Como nos encontrou?" e é gravado na planilha |
-| `assunto=reforma` | Pré-escreve o problema (Reforma Tributária) |
+| `assunto=reforma` | Pré-escreve o problema ("Quero avaliar se minha equipe está preparada para a Reforma Tributária (CBS/IBS).") |
 | `momento=01..04` | Pré-escreve o problema conforme o card "Seu momento" |
 | `mock=1` | Modo demonstração 100% no navegador |
 

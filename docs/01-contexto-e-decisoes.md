@@ -27,6 +27,7 @@
 | Navbar com logo + "HELPNOW" em uma linha; "Consultoria e Gestão de Negócios" vai no `<title>` | Pedido do cliente |
 | Primeira seção = jornada passo a passo (Iniciamos → Diagnosticamos → Estruturamos → Acompanhamos) | Pedido do cliente: gestão "passo a passo"; substitui a antiga seção "Como trabalhamos" |
 | Reforma Tributária logo após o hero | Dá o ar de site atualizado (referência Microsystem) |
+| Reforma Tributária com foco na **preparação da equipe**; cards "o que muda por área" (Fiscal, Faturamento, Financeiro, Compras) no lugar do calendário 2026–2033 | Copy aprovada pelo cliente em 10/10/2026: o ERP recebe a atualização, mas quem opera as novas regras é o time |
 | "Na prática" mostra um processo de ponta a ponta (Procure-to-Pay) com toggle Hoje × HelpNow | Pedido de "processo campeão que mostre a proposta" |
 | Seções removidas: faixa de ERPs, "Soluções", "Quem está por trás" | Pedido do cliente. "Quem está por trás" volta no futuro (backlog) |
 | Site em HTML/CSS/JS puros | Plano P não roda Node; simplicidade de manutenção e deploy |

@@ -241,7 +241,7 @@
   var assunto = params.get('assunto') || '';
   var momento = params.get('momento') || '';
   var problema = $('f-problema');
-  if (assunto === 'reforma') problema.value = 'Quero avaliar se nosso ERP está pronto para a Reforma Tributária (CBS/IBS).';
+  if (assunto === 'reforma') problema.value = 'Quero avaliar se minha equipe está preparada para a Reforma Tributária (CBS/IBS).';
   else if (MOMENTO_TXT[momento]) problema.value = MOMENTO_TXT[momento];
 
   var phone = $('f-whatsapp');
