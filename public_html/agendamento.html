@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Agendamento | HelpNow — Consultoria e Gestão de Negócios</title>
+  <meta name="description" content="Agende 60 minutos gratuitos com um especialista HelpNow para investigar um problema real do seu backoffice — TOTVS RM, Protheus ou planilha.">
+  <link rel="canonical" href="https://helpnowsolucoes.com.br/agendamento">
+  <meta name="theme-color" content="#060D2B">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:title" content="Agende seu diagnóstico de 60 minutos | HelpNow">
+  <meta property="og:description" content="Uma hora com um especialista para investigar um problema real do seu backoffice. Online, sem custo.">
+  <meta property="og:url" content="https://helpnowsolucoes.com.br/agendamento">
+  <meta property="og:image" content="https://helpnowsolucoes.com.br/assets/img/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=1">
+</head>
+<body class="ag-body">
+
+<header class="ag-header">
+  <div class="container">
+    <a class="brand" href="/" aria-label="HelpNow — página inicial">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="66,104 84,104 98,16 80,16" fill="#0A1433"/><path d="M38,76 Q66,56 102,52" fill="none" stroke="#FFFFFF" stroke-width="25" stroke-linecap="round"/><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="11" stroke-linejoin="round"/><polygon points="26,104 44,104 58,16 40,16" fill="#2456F0"/><path d="M38,76 Q66,56 102,52" fill="none" stroke="#2456F0" stroke-width="13" stroke-linecap="round"/><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#2456F0" stroke="#2456F0" stroke-width="2" stroke-linejoin="round"/></svg>
+      <span class="wordmark wordmark--dark">HELP<span>NOW</span></span>
+      <span class="ag-header__tag">agendamento</span>
+    </a>
+    <a class="ag-header__wa" href="https://wa.me/5521968441647" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12Z"/></svg>
+      Prefere falar no WhatsApp?</a>
+  </div>
+</header>
+
+<main class="ag-main">
+  <div class="container">
+
+    <!-- Oferta -->
+    <aside class="offer" aria-label="Sobre a reunião">
+      <div class="offer__badge">
+        <div class="offer__circle" aria-hidden="true"><strong>60</strong><span>MINUTOS</span></div>
+        <span>PARA DIAGNÓSTICO</span>
+      </div>
+      <h1>Agende sua reunião com um especialista <span>HelpNow.</span></h1>
+      <p class="offer__desc">Uma hora para investigar um problema real do seu backoffice — no TOTVS RM, no Protheus ou ainda na planilha.</p>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>1 hora · online (Google Meet)</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Segunda a sexta · horário de Brasília</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Sem custo e sem compromisso</li>
+      </ul>
+      <p class="offer__foot">Você sai da reunião com o problema mapeado e o <strong>próximo passo definido</strong>.</p>
+    </aside>
+
+    <!-- Fluxo -->
+    <section class="booking" aria-labelledby="booking-title">
+      <h2 id="booking-title" class="sr-only">Agendar diagnóstico</h2>
+      <ol class="stepper" aria-label="Etapas do agendamento">
+        <li class="is-active" data-step-ind="1"><span class="stepper__dot">1</span>Data e horário</li>
+        <li data-step-ind="2"><span class="stepper__dot">2</span>Seus dados</li>
+        <li data-step-ind="3"><span class="stepper__dot">3</span>Confirmação</li>
+      </ol>
+
+      <div id="ag-alert" role="alert" aria-live="assertive"></div>
+
+      <!-- PASSO 1 -->
+      <div id="step-1" data-step="1">
+        <div class="ag-month">
+          <span class="ag-month__label" id="week-label">OUTUBRO 2026 · ESCOLHA O DIA</span>
+          <div class="ag-month__nav">
+            <button class="icon-btn" type="button" id="week-prev" aria-label="Semana anterior" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+            <button class="icon-btn" type="button" id="week-next" aria-label="Próxima semana">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+          </div>
+        </div>
+        <div class="days" id="days" aria-busy="true">
+          <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+        </div>
+        <h3 class="slots-title" id="slots-title" aria-live="polite">Carregando horários…</h3>
+        <div class="slots" id="slots">
+          <div class="skeleton skeleton--slot"></div><div class="skeleton skeleton--slot"></div><div class="skeleton skeleton--slot"></div>
+        </div>
+        <div class="ag-footer-bar">
+          <p class="ag-selection" id="selection-text">Selecione um horário para continuar.</p>
+          <button class="btn btn--primary" type="button" id="to-step-2" disabled>Continuar</button>
+        </div>
+      </div>
+
+      <!-- PASSO 2 -->
+      <div id="step-2" data-step="2" hidden>
+        <div class="summary-bar"><strong id="summary-text"></strong><button class="link-btn" type="button" id="back-to-1">Alterar</button></div>
+        <form id="ag-form" novalidate>
+          <div class="form-grid">
+            <div class="field"><label for="f-nome">Nome completo *</label><input id="f-nome" name="nome" type="text" autocomplete="name" required maxlength="120" placeholder="Seu nome"><span class="field__error" id="e-nome"></span></div>
+            <div class="field"><label for="f-empresa">Empresa *</label><input id="f-empresa" name="empresa" type="text" autocomplete="organization" required maxlength="120" placeholder="Nome da empresa"><span class="field__error" id="e-empresa"></span></div>
+            <div class="field"><label for="f-whatsapp">WhatsApp *</label><input id="f-whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel-national" required maxlength="16" placeholder="(21) 90000-0000"><span class="field__error" id="e-whatsapp"></span></div>
+            <div class="field"><label for="f-email">E-mail corporativo *</label><input id="f-email" name="email" type="email" autocomplete="email" required maxlength="160" placeholder="voce@empresa.com.br"><span class="field__error" id="e-email"></span></div>
+            <div class="field"><label for="f-erp">Hoje vocês usam *</label>
+              <select id="f-erp" name="erp" required>
+                <option value="">Selecione</option>
+                <option>TOTVS RM</option>
+                <option>TOTVS Protheus</option>
+                <option>Outro ERP</option>
+                <option>Planilhas / ainda sem ERP</option>
+              </select><span class="field__error" id="e-erp"></span></div>
+            <div class="field"><label for="f-canal">Como nos encontrou? *</label>
+              <select id="f-canal" name="canal" required>
+                <option value="">Selecione</option>
+                <option>Universo TOTVS</option>
+                <option>LinkedIn</option>
+                <option>Instagram</option>
+                <option>Google</option>
+              </select><span class="field__error" id="e-canal"></span></div>
+            <div class="field field--full"><label for="f-problema">Qual problema você quer investigar?</label>
+              <textarea id="f-problema" name="problema" rows="4" maxlength="1500" placeholder="Ex.: nosso fechamento mensal leva dias e depende de planilhas…"></textarea></div>
+          </div>
+          <div class="hp" aria-hidden="true"><label for="f-website">Não preencha</label><input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+          <label class="consent" for="f-consent"><input id="f-consent" name="consent" type="checkbox" required><span>Concordo em receber a confirmação e o link da reunião por WhatsApp e e-mail, conforme a <a href="/politica-de-privacidade" target="_blank" rel="noopener">política de privacidade</a>.</span></label>
+          <span class="field__error" id="e-consent"></span>
+          <div class="ag-footer-bar">
+            <button class="btn btn--outline" type="button" id="back-to-1b">Voltar</button>
+            <button class="btn btn--primary" type="submit" id="submit-btn">Confirmar agendamento</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- PASSO 3 -->
+      <div id="step-3" data-step="3" hidden tabindex="-1">
+        <div class="confirm">
+          <div class="confirm__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <h2 id="confirm-title">Reunião confirmada!</h2>
+          <div class="confirm__card">
+            <span class="kicker">DIAGNÓSTICO HELPNOW · 60 MIN</span>
+            <span class="confirm__when" id="confirm-when"></span>
+            <span id="confirm-email">Enviamos o convite com o link do Google Meet para o seu e-mail.</span>
+          </div>
+          <div class="confirm__btns">
+            <a class="btn btn--primary" id="gcal-link" href="#" target="_blank" rel="noopener">Adicionar à minha agenda</a>
+            <button class="btn btn--outline" type="button" id="ics-btn">Baixar convite (.ics)</button>
+            <a class="btn btn--outline" href="/">Conhecer a HelpNow</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="ag-foot">
+  <div class="container">
+    <span>© 2026 HelpNow Soluções · CNPJ 49.739.083/0001-24 · <a href="mailto:contato@helpnowsolucoes.com.br">contato@helpnowsolucoes.com.br</a></span>
+    <span>Juntos vamos <strong style="color:var(--blue-600)">mais longe!</strong> · <a href="/politica-de-privacidade">Privacidade</a></span>
+  </div>
+</footer>
+
+<script src="/assets/js/agendamento.js?v=1" defer></script>
+</body>
+</html>

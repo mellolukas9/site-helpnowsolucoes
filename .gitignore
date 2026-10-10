@@ -1,0 +1,10 @@
+# Segredos — nunca versionar
+helpnow-config.php
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+node_modules/
+dist/
+*.zip

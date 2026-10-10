@@ -1,0 +1,511 @@
+<title>Implantação HelpNow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: guia técnico de implantação — trilho de etapas fixo à esquerda (desktop), conteúdo em blocos numerados à direita; identidade HelpNow (marinho, azul da marca, ciano de destaque). */
+:root{
+  --bg:#F2F4FA; --surface:#FFFFFF; --surface-2:#E9EDF7; --ink:#0A1433; --muted:#46516E; --line:#D8DFEE;
+  --brand:#2456F0; --brand-ink:#FFFFFF; --accent:#0B8FB0; --accent-soft:#DDF6FC;
+  --warn:#9A4A12; --warn-soft:#FFF0E6; --ok:#137A47; --ok-soft:#E3F6EC;
+  --code-bg:#0A1433; --code-ink:#E6EBF5; --code-dim:#8FA0C8; --hero:#060D2B; --hero-ink:#FFFFFF; --hero-muted:#C9D2E6; --cyan:#3DDCFF;
+  --display:"Sora","Segoe UI",system-ui,sans-serif; --body:"Manrope","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#060D2B; --surface:#0D1840; --surface-2:#132252; --ink:#EEF2FB; --muted:#A9B4D0; --line:#22305E;
+  --brand:#4D8BFF; --brand-ink:#060D2B; --accent:#3DDCFF; --accent-soft:#0E2E45;
+  --warn:#FFB385; --warn-soft:#3A2214; --ok:#7CE3A6; --ok-soft:#10352A;
+  --code-bg:#030820; --code-ink:#E6EBF5; --code-dim:#8FA0C8; --hero:#0A1433; --hero-ink:#FFFFFF; --hero-muted:#C9D2E6; --cyan:#3DDCFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#060D2B; --surface:#0D1840; --surface-2:#132252; --ink:#EEF2FB; --muted:#A9B4D0; --line:#22305E;
+  --brand:#4D8BFF; --brand-ink:#060D2B; --accent:#3DDCFF; --accent-soft:#0E2E45;
+  --warn:#FFB385; --warn-soft:#3A2214; --ok:#7CE3A6; --ok-soft:#10352A;
+  --code-bg:#030820; --code-ink:#E6EBF5; --code-dim:#8FA0C8; --hero:#0A1433; --hero-ink:#FFFFFF; --hero-muted:#C9D2E6; --cyan:#3DDCFF; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+code,kbd{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:.1em .4em;border-radius:5px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+p{margin:0}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:4px}
+
+/* hero */
+.hero{background:var(--hero);color:var(--hero-ink);position:relative;overflow:hidden}
+.hero::before,.hero::after{content:"";position:absolute;top:-60px;width:110px;height:520px;transform:skewX(-9deg);border-radius:6px}
+.hero::before{right:12%;background:#2E6BFF;opacity:.2}
+.hero::after{right:3%;background:#E6EBF5;opacity:.08}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px}
+.hero .wrap{position:relative;padding-block:44px 52px;display:grid;gap:18px}
+.brandrow{display:flex;align-items:center;gap:10px}
+.brandrow b{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-.03em}
+.brandrow b span{color:#2E6BFF}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.hero .kicker{color:var(--cyan)}
+.hero h1{font-weight:800;font-size:clamp(32px,5vw,54px);line-height:1.04;letter-spacing:-.04em;max-width:820px}
+.hero p.lead{color:var(--hero-muted);font-size:18px;max-width:720px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--hero-muted)}
+.pill strong{color:#fff;font-weight:700}
+
+/* progress */
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.progress .wrap{display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
+.bar{flex:1 1 200px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;min-width:0}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .4s ease}
+.progress .count{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.btn-reset{font:600 13px var(--body);color:var(--muted);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;min-height:36px}
+
+/* layout */
+.layout{display:flex;flex-wrap:wrap;gap:36px;padding-block:36px 80px}
+.toc{flex:1 1 220px;max-width:260px;min-width:0}
+.toc nav{position:sticky;top:76px;display:grid;gap:4px}
+.toc a{display:flex;gap:10px;align-items:baseline;text-decoration:none;color:var(--muted);font-weight:600;font-size:14px;padding:7px 10px;border-radius:8px}
+.toc a:hover{background:var(--surface);color:var(--ink)}
+.toc a span{font-family:var(--mono);font-size:12px;color:var(--brand);min-width:22px}
+.content{flex:999 1 560px;min-width:0;display:grid;gap:28px}
+@media (max-width:860px){.toc{max-width:none;flex-basis:100%}.toc nav{position:static;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+
+/* sections */
+.step{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;display:grid;gap:18px;scroll-margin-top:72px}
+.step-head{display:flex;gap:16px;align-items:flex-start}
+.num{flex:none;width:46px;height:46px;border-radius:12px;background:var(--hero);color:#fff;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:18px}
+.step-head h2{font-size:clamp(22px,2.6vw,28px);font-weight:800;letter-spacing:-.025em;line-height:1.15}
+.step-head .where{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.step > p,.step li{max-width:72ch}
+h3{font-size:17px;font-weight:700;letter-spacing:-.01em}
+ol.howto{margin:0;padding-left:22px;display:grid;gap:8px}
+ol.howto li::marker{font-family:var(--mono);color:var(--brand);font-weight:500}
+ul.plain{margin:0;padding-left:20px;display:grid;gap:6px}
+
+/* checklist */
+.checks{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.checks label{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--bg)}
+.checks input{width:20px;height:20px;margin-top:2px;accent-color:var(--brand);flex:none}
+.checks label:has(input:checked){background:var(--ok-soft);border-color:transparent}
+.checks label:has(input:checked) span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--ok)}
+
+/* callouts */
+.note{border-radius:12px;padding:14px 16px;display:grid;gap:4px;font-size:15px}
+.note b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.note.warn{background:var(--warn-soft);color:var(--ink)} .note.warn b{color:var(--warn)}
+.note.tip{background:var(--accent-soft);color:var(--ink)} .note.tip b{color:var(--accent)}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);font-weight:500}
+tr:last-child td{border-bottom:none}
+td code{white-space:nowrap}
+
+/* code */
+.code{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:12px;overflow:hidden}
+.code pre{margin:0;padding:16px 18px;overflow-x:auto;font:13.5px/1.6 var(--mono);white-space:pre}
+.code .lbl{display:flex;justify-content:space-between;align-items:center;padding:8px 10px 8px 18px;border-bottom:1px solid rgba(255,255,255,.08);font:12px var(--mono);color:var(--code-dim)}
+.copy{font:600 12px var(--body);color:var(--code-ink);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:5px 10px;cursor:pointer;min-height:32px}
+.copy.done{background:#137A47;border-color:#137A47}
+
+/* architecture */
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:f}
+.node{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:4px;position:relative}
+.node .k{font-family:var(--mono);font-size:11px;color:var(--brand);letter-spacing:.08em;text-transform:uppercase}
+.node strong{font-family:var(--display);font-size:15px}
+.node small{color:var(--muted);font-size:13px;line-height:1.45}
+.node.hl{background:var(--hero);border-color:var(--hero);color:#fff}
+.node.hl small{color:var(--hero-muted)} .node.hl .k{color:var(--cyan)}
+
+/* timeline */
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.day{border-radius:12px;padding:14px;border:1px solid var(--line);background:var(--bg);display:grid;gap:4px}
+.day .d{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.day strong{font-family:var(--display)}
+.day.key{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)} .day.key .d{color:inherit;opacity:.85}
+
+.foot{color:var(--muted);font-size:13px;padding-block:24px 40px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brandrow">
+      <svg width="40" height="40" viewBox="0 0 120 120" aria-hidden="true"><polygon points="66,104 84,104 98,16 80,16" fill="#E6EBF5"></polygon><path d="M38,76 Q66,56 102,52" fill="none" stroke="#060D2B" stroke-width="25" stroke-linecap="round"></path><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#060D2B" stroke="#060D2B" stroke-width="11" stroke-linejoin="round"></polygon><polygon points="26,104 44,104 58,16 40,16" fill="#2E6BFF"></polygon><path d="M38,76 Q66,56 102,52" fill="none" stroke="#2E6BFF" stroke-width="13" stroke-linecap="round"></path><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#2E6BFF" stroke="#2E6BFF" stroke-width="2" stroke-linejoin="round"></polygon></svg>
+      <b>HELP<span>NOW</span></b>
+    </div>
+    <div class="kicker">Guia de implantação · site + agendamento</div>
+    <h1>Do domínio à primeira reunião agendada.</h1>
+    <p class="lead">Passo a passo para colocar helpnowsolucoes.com.br no ar na HostGator, manter o e-mail do Google Workspace funcionando e ligar o /agendamento à agenda do comercial@.</p>
+    <div class="meta">
+      <span class="pill">Domínio <strong>helpnowsolucoes.com.br</strong></span>
+      <span class="pill">Hospedagem <strong>HostGator Plano P</strong></span>
+      <span class="pill">Workspace <strong>Business Starter</strong></span>
+      <span class="pill">Agenda <strong>comercial@</strong></span>
+    </div>
+  </div>
+</header>
+
+<div class="progress" role="region" aria-label="Progresso">
+  <div class="wrap">
+    <span class="kicker" style="color:var(--muted)">Progresso</span>
+    <div class="bar" aria-hidden="true"><i id="barfill"></i></div>
+    <span class="count" id="count" aria-live="polite">0 de 0 itens</span>
+    <button class="btn-reset" id="reset" type="button">Limpar marcações</button>
+  </div>
+</div>
+
+<div class="wrap layout">
+  <aside class="toc" aria-label="Etapas">
+    <nav>
+      <a href="#visao"><span>—</span>Visão geral</a>
+      <a href="#s0"><span>00</span>Acessos</a>
+      <a href="#s1"><span>01</span>Google Workspace</a>
+      <a href="#s2"><span>02</span>DNS (Registro.br)</a>
+      <a href="#s3"><span>03</span>HostGator</a>
+      <a href="#s4"><span>04</span>Planilha e Apps Script</a>
+      <a href="#s5"><span>05</span>Publicar o site</a>
+      <a href="#s6"><span>06</span>Teste ponta a ponta</a>
+      <a href="#s7"><span>07</span>WhatsApp Business</a>
+      <a href="#planob"><span>B</span>Plano B</a>
+      <a href="#problemas"><span>?</span>Se algo der errado</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+
+    <!-- VISÃO GERAL -->
+    <section class="step" id="visao">
+      <div class="step-head"><div class="num" aria-hidden="true">↗</div><div><h2>Como as peças se conectam</h2><div class="where">Leia antes de começar</div></div></div>
+      <div class="flow">
+        <div class="node"><span class="k">Cliente</span><strong>QR Code no cartão</strong><small>Abre o WhatsApp e recebe a saudação com o link.</small></div>
+        <div class="node"><span class="k">HostGator</span><strong>helpnowsolucoes.com.br</strong><small>Site estático + /agendamento. Arquivo <code>api/agenda.php</code> faz a ponte.</small></div>
+        <div class="node hl"><span class="k">Google · comercial@</span><strong>Apps Script</strong><small>Calcula horários livres, cria o evento com Meet, grava a planilha, envia e-mails.</small></div>
+        <div class="node"><span class="k">Resultado</span><strong>Agenda + Leads</strong><small>Evento no Google Agenda, linha na planilha "HelpNow — Leads", convite no e-mail do cliente.</small></div>
+      </div>
+      <h3>Cronograma sugerido</h3>
+      <div class="days">
+        <div class="day"><span class="d">Sáb 10/10 – Dom 11/10</span><strong>Etapas 00 a 03</strong><span>DNS e Workspace primeiro: a propagação pode levar até 24–48h.</span></div>
+        <div class="day"><span class="d">Seg 12/10</span><strong>Etapas 04 a 07</strong><span>Apps Script, publicar o site, testar tudo, configurar o WhatsApp.</span></div>
+        <div class="day key"><span class="d">Ter 13/10</span><strong>Universo TOTVS</strong><span>QR Code → WhatsApp → /agendamento.</span></div>
+        <div class="day"><span class="d">Qui 15/10</span><strong>Agenda abre</strong><span>Primeiros horários disponíveis: 9h às 18h, sem 12h–14h.</span></div>
+      </div>
+      <div class="note warn"><b>Ponto mais sensível</b><p>Os registros de e-mail (MX, SPF, DKIM) precisam continuar apontando para o Google em todas as mudanças de DNS. Se sumirem, o e-mail @helpnowsolucoes.com.br para de chegar.</p></div>
+    </section>
+
+    <!-- 00 -->
+    <section class="step" id="s0">
+      <div class="step-head"><div class="num">00</div><div><h2>Separe os acessos</h2><div class="where">Antes de tudo</div></div></div>
+      <ul class="checks">
+        <li><label><input type="checkbox" id="c0-1"><span><strong>Registro.br</strong> — login do titular do domínio (registro.br).</span></label></li>
+        <li><label><input type="checkbox" id="c0-2"><span><strong>HostGator</strong> — Portal do Cliente e cPanel do Plano P.</span></label></li>
+        <li><label><input type="checkbox" id="c0-3"><span><strong>Google Admin</strong> — conta de administrador do Workspace (admin.google.com).</span></label></li>
+        <li><label><input type="checkbox" id="c0-4"><span><strong>comercial@helpnowsolucoes.com.br</strong> — login e senha (é a conta que vai ser dona da agenda, da planilha e do script).</span></label></li>
+        <li><label><input type="checkbox" id="c0-5"><span><strong>WhatsApp Business</strong> do número (21) 96844-1647 no celular.</span></label></li>
+        <li><label><input type="checkbox" id="c0-6"><span>Pasta <code>helpnow-site</code> do projeto (com <code>public_html/</code>, <code>apps-script/</code> e <code>server-config/</code>).</span></label></li>
+      </ul>
+    </section>
+
+    <!-- 01 -->
+    <section class="step" id="s1">
+      <div class="step-head"><div class="num">01</div><div><h2>Google Workspace</h2><div class="where">admin.google.com · calendar.google.com</div></div></div>
+
+      <h3>1.1 Anote os registros de e-mail atuais</h3>
+      <p>Em <strong>admin.google.com → Conta → Domínios → Gerenciar domínios</strong>, confira se <code>helpnowsolucoes.com.br</code> está como <em>Verificado</em> e com o Gmail ativo. Guarde o TXT de verificação do Google (<code>google-site-verification=…</code>): ele precisa existir no DNS para sempre.</p>
+
+      <h3>1.2 Gere a assinatura DKIM</h3>
+      <ol class="howto">
+        <li><strong>Apps → Google Workspace → Gmail → Autenticar e-mail</strong>.</li>
+        <li>Selecione o domínio, clique em <strong>Gerar novo registro</strong> (2048 bits, prefixo <code>google</code>).</li>
+        <li>Copie o valor do TXT gerado. Ele entra no DNS na etapa 02. Volte aqui depois e clique em <strong>Iniciar autenticação</strong>.</li>
+      </ol>
+
+      <h3>1.3 Libere o Web App do Apps Script para o público</h3>
+      <p>O agendamento precisa ser publicado com acesso "Qualquer pessoa". Essa opção só aparece se o compartilhamento externo estiver liberado.</p>
+      <ol class="howto">
+        <li><strong>Apps → Google Workspace → Drive e Documentos → Configurações de compartilhamento → Opções de compartilhamento</strong>.</li>
+        <li>Em "Compartilhamento fora de HelpNow", marque <strong>Ativado</strong> e salve. Pode levar alguns minutos para valer.</li>
+      </ol>
+
+      <h3>1.4 Prepare a agenda do comercial@</h3>
+      <ol class="howto">
+        <li>Logado como comercial@, abra <strong>calendar.google.com → Configurações → Geral</strong>: fuso horário <strong>(GMT-03:00) Horário de Brasília</strong>.</li>
+        <li><strong>Outras agendas → + → Procurar agendas de interesse → Feriados regionais → Brasil</strong>. O script usa essa agenda para bloquear feriados (e tem uma lista de reserva no código).</li>
+        <li>Opcional: em <strong>Horário de trabalho</strong>, marque seg–sex, 9h–12h e 14h–18h. Não é obrigatório: as regras de horário estão no script.</li>
+      </ol>
+      <div class="note tip"><b>Regra prática</b><p>Qualquer compromisso marcado como "Ocupado" na agenda do comercial@ some automaticamente do site. Para bloquear um dia, basta criar um evento de dia inteiro como "Ocupado".</p></div>
+
+      <ul class="checks">
+        <li><label><input type="checkbox" id="c1-1"><span>Domínio verificado e TXT de verificação anotado.</span></label></li>
+        <li><label><input type="checkbox" id="c1-2"><span>DKIM gerado (valor copiado).</span></label></li>
+        <li><label><input type="checkbox" id="c1-3"><span>Compartilhamento externo do Drive ativado.</span></label></li>
+        <li><label><input type="checkbox" id="c1-4"><span>Agenda do comercial@ em horário de Brasília e com "Feriados no Brasil".</span></label></li>
+      </ul>
+    </section>
+
+    <!-- 02 -->
+    <section class="step" id="s2">
+      <div class="step-head"><div class="num">02</div><div><h2>DNS do domínio</h2><div class="where">registro.br → seu domínio</div></div></div>
+
+      <h3>2.1 Descubra quem responde pelo DNS hoje</h3>
+      <p>No Registro.br, abra o domínio e veja a seção <strong>DNS</strong>.</p>
+      <ul class="plain">
+        <li>Se aparecem servidores <strong>da HostGator</strong> (algo como <code>nsXXX.hostgator.com.br</code>): a zona é editada no cPanel. Vá para a etapa 03.2.</li>
+        <li>Se aparece <strong>"Utilizando os servidores DNS do Registro.br"</strong>: a zona é editada no próprio Registro.br, em <strong>Configurar zona DNS / Editar zona</strong>. Use a tabela abaixo ali.</li>
+      </ul>
+      <div class="note tip"><b>Recomendação</b><p>Apontar o domínio para os DNS da HostGator deixa tudo num lugar só (cPanel). Os nameservers corretos estão no Portal do Cliente HostGator / e-mail de boas-vindas do plano. <strong>Antes</strong> de trocar, crie na zona da HostGator os registros de e-mail da tabela abaixo; só então altere os servidores no Registro.br (<strong>Alterar servidores DNS</strong>).</p></div>
+
+      <h3>2.2 Registros que a zona precisa ter</h3>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Tipo</th><th>Nome</th><th>Valor</th><th>Prioridade / obs.</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td><code>@</code></td><td>IP do servidor HostGator <span style="color:var(--muted)">(cPanel → barra lateral "Endereço IP compartilhado")</span></td><td>Site</td></tr>
+            <tr><td>CNAME</td><td><code>www</code></td><td><code>helpnowsolucoes.com.br</code></td><td>Site (o .htaccess redireciona www → sem www)</td></tr>
+            <tr><td>MX</td><td><code>@</code></td><td><code>smtp.google.com</code></td><td>Prioridade 1 · apague qualquer outro MX (ex.: <code>mail.helpnowsolucoes.com.br</code>)</td></tr>
+            <tr><td>TXT</td><td><code>@</code></td><td><code>v=spf1 include:_spf.google.com ~all</code></td><td>Só pode existir <strong>um</strong> SPF</td></tr>
+            <tr><td>TXT</td><td><code>google._domainkey</code></td><td>Valor gerado no passo 1.2</td><td>DKIM · se o painel limitar a 255 caracteres, divida em partes</td></tr>
+            <tr><td>TXT</td><td><code>_dmarc</code></td><td><code>v=DMARC1; p=none; rua=mailto:comercial@helpnowsolucoes.com.br</code></td><td>Monitoramento; endureça depois</td></tr>
+            <tr><td>TXT</td><td><code>@</code></td><td><code>google-site-verification=…</code></td><td>Manter o que já existe</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code"><div class="lbl">Conferir a propagação (terminal)<button class="copy" type="button">Copiar</button></div><pre>dig +short A helpnowsolucoes.com.br
+dig +short MX helpnowsolucoes.com.br
+dig +short TXT helpnowsolucoes.com.br
+dig +short TXT google._domainkey.helpnowsolucoes.com.br</pre></div>
+      <p style="color:var(--muted);font-size:14px">Sem terminal? Use um verificador de DNS online (ex.: dnschecker.org) com os mesmos nomes.</p>
+
+      <ul class="checks">
+        <li><label><input type="checkbox" id="c2-1"><span>Sei onde a zona é editada (HostGator ou Registro.br).</span></label></li>
+        <li><label><input type="checkbox" id="c2-2"><span>MX, SPF, DKIM, DMARC e verificação Google criados.</span></label></li>
+        <li><label><input type="checkbox" id="c2-3"><span>A e CNAME do site apontando para a HostGator.</span></label></li>
+        <li><label><input type="checkbox" id="c2-4"><span>Propagação conferida e e-mail testado (enviar e receber no comercial@).</span></label></li>
+        <li><label><input type="checkbox" id="c2-5"><span>Voltei ao Google Admin e cliquei em <strong>Iniciar autenticação</strong> do DKIM.</span></label></li>
+      </ul>
+    </section>
+
+    <!-- 03 -->
+    <section class="step" id="s3">
+      <div class="step-head"><div class="num">03</div><div><h2>HostGator</h2><div class="where">Portal do Cliente · cPanel</div></div></div>
+
+      <h3>3.1 Domínio principal do plano</h3>
+      <p>O Plano P hospeda um domínio. Confirme no Portal do Cliente que o plano está associado a <code>helpnowsolucoes.com.br</code> como <strong>domínio principal</strong> e que o site vai em <code>public_html/</code>.</p>
+
+      <h3>3.2 Zona DNS (se o DNS estiver na HostGator)</h3>
+      <p><strong>cPanel → Domínios → Zone Editor → Gerenciar</strong>. Crie/ajuste os registros da tabela 2.2 e remova MX antigos que apontem para a própria HostGator.</p>
+
+      <h3>3.3 E-mail fica no Google</h3>
+      <p><strong>cPanel → E-mail → Roteamento de e-mail</strong> (Email Routing): selecione <strong>Trocador de e-mail remoto</strong> (Remote Mail Exchanger). Sem isso, mensagens enviadas pelo próprio servidor (como formulários) podem ficar presas na HostGator. Não crie contas de e-mail no cPanel.</p>
+
+      <h3>3.4 PHP e SSL</h3>
+      <ol class="howto">
+        <li><strong>cPanel → Software → MultiPHP Manager</strong> (ou "Selecionar versão do PHP"): defina <strong>PHP 8.2 ou superior</strong> para o domínio e confirme que a extensão <code>curl</code> está ativa.</li>
+        <li>SSL gratuito: no Portal do Cliente ou em <strong>cPanel → Segurança → SSL/TLS Status</strong>, confirme o certificado para <code>helpnowsolucoes.com.br</code> e <code>www</code>. Ele só é emitido depois que o DNS apontar para a HostGator.</li>
+        <li>Anote o <strong>diretório inicial</strong> (barra lateral do cPanel, algo como <code>/home/usuario</code>). O arquivo de configuração secreto vai nele, fora do <code>public_html</code>.</li>
+      </ol>
+
+      <ul class="checks">
+        <li><label><input type="checkbox" id="c3-1"><span>Domínio principal do Plano P confirmado.</span></label></li>
+        <li><label><input type="checkbox" id="c3-2"><span>Roteamento de e-mail em "remoto".</span></label></li>
+        <li><label><input type="checkbox" id="c3-3"><span>PHP 8.2+ com cURL.</span></label></li>
+        <li><label><input type="checkbox" id="c3-4"><span>SSL ativo (https abre sem aviso).</span></label></li>
+      </ul>
+    </section>
+
+    <!-- 04 -->
+    <section class="step" id="s4">
+      <div class="step-head"><div class="num">04</div><div><h2>Planilha e Apps Script</h2><div class="where">Logado como comercial@ · drive.google.com</div></div></div>
+
+      <h3>4.1 Criar a planilha</h3>
+      <ol class="howto">
+        <li>No Drive do comercial@, crie uma planilha chamada <strong>HelpNow — Leads</strong>.</li>
+        <li>Menu <strong>Extensões → Apps Script</strong>. Renomeie o projeto para <strong>HelpNow Agendamento</strong>.</li>
+      </ol>
+
+      <h3>4.2 Colar o código</h3>
+      <ol class="howto">
+        <li>Substitua o conteúdo de <code>Código.gs</code> pelo <code>apps-script/Code.gs</code> do projeto.</li>
+        <li><strong>Configurações do projeto (engrenagem)</strong> → marque "Mostrar arquivo de manifesto appsscript.json" → cole o <code>apps-script/appsscript.json</code>.</li>
+        <li>No editor, <strong>Serviços (+)</strong> → <strong>Google Calendar API</strong> → Adicionar. É o que cria o link do Meet.</li>
+      </ol>
+
+      <h3>4.3 Rodar o setup e autorizar</h3>
+      <ol class="howto">
+        <li>Selecione a função <code>setup</code> e clique em <strong>Executar</strong>.</li>
+        <li>Autorize com a conta comercial@ (agenda, planilha, envio de e-mail, gatilhos). Se aparecer "app não verificado", clique em <em>Avançado → Acessar HelpNow Agendamento</em>: é o seu próprio script.</li>
+        <li>O setup cria a aba <strong>Leads</strong> com cabeçalhos, o gatilho de lembrete (a cada hora) e gera o <strong>SHARED_SECRET</strong>. Copie o secret do <strong>Registro de execução</strong> (ou de Configurações → Propriedades do script).</li>
+        <li>Rode <code>testSlots</code> e confira no registro se aparecem horários a partir de 15/10 (seg–sex; 9, 10, 11, 14, 15, 16 e 17h).</li>
+      </ol>
+
+      <h3>4.4 Publicar como Web App</h3>
+      <ol class="howto">
+        <li><strong>Implantar → Nova implantação → tipo "App da Web"</strong>.</li>
+        <li>Descrição "v1" · <strong>Executar como: Eu (comercial@)</strong> · <strong>Quem pode acessar: Qualquer pessoa</strong>.</li>
+        <li>Copie a <strong>URL do app da Web</strong> (termina em <code>/exec</code>).</li>
+      </ol>
+      <div class="note warn"><b>Ao atualizar o código</b><p>Use <strong>Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão</strong>. Assim a URL continua a mesma. Uma "Nova implantação" gera outra URL e o site para de funcionar até você trocar no arquivo de configuração.</p></div>
+
+      <ul class="checks">
+        <li><label><input type="checkbox" id="c4-1"><span>Planilha "HelpNow — Leads" criada no Drive do comercial@.</span></label></li>
+        <li><label><input type="checkbox" id="c4-2"><span>Código e manifesto colados; Google Calendar API adicionada.</span></label></li>
+        <li><label><input type="checkbox" id="c4-3"><span><code>setup</code> executado e autorizado; SHARED_SECRET copiado.</span></label></li>
+        <li><label><input type="checkbox" id="c4-4"><span><code>testSlots</code> mostrou horários corretos.</span></label></li>
+        <li><label><input type="checkbox" id="c4-5"><span>Web App publicado (Eu · Qualquer pessoa); URL /exec copiada.</span></label></li>
+      </ul>
+    </section>
+
+    <!-- 05 -->
+    <section class="step" id="s5">
+      <div class="step-head"><div class="num">05</div><div><h2>Publicar o site</h2><div class="where">Seu computador → cPanel</div></div></div>
+
+      <h3>5.1 Testar no seu computador (opcional)</h3>
+      <div class="code"><div class="lbl">Na pasta helpnow-site<button class="copy" type="button">Copiar</button></div><pre>php -S localhost:8000 -t public_html tools/dev-router.php
+# http://localhost:8000/agendamento  → agenda em modo simulado</pre></div>
+      <p style="color:var(--muted);font-size:14px">O site não tem etapa de build: a pasta <code>public_html/</code> do projeto já é exatamente o que vai para o servidor.</p>
+
+      <h3>5.2 Enviar para a HostGator</h3>
+      <ol class="howto">
+        <li>Faça backup e esvazie o <code>public_html/</code> do servidor (se houver página padrão da HostGator).</li>
+        <li>Compacte o <strong>conteúdo</strong> da pasta <code>public_html/</code> do projeto em um .zip, envie pelo Gerenciador de Arquivos para o <code>public_html</code> do servidor e use "Extrair". FTP também serve.</li>
+      </ol>
+      <div class="note tip"><b>Arquivos ocultos</b><p>O <code>.htaccess</code> começa com ponto. No Gerenciador de Arquivos, ative <strong>Configurações → Mostrar arquivos ocultos</strong> para conferir que ele foi enviado.</p></div>
+
+      <h3>5.3 Arquivo de configuração secreto</h3>
+      <p>Copie <code>server-config/helpnow-config.sample.php</code> para o <strong>diretório inicial</strong> (fora do public_html) com o nome <code>helpnow-config.php</code> e preencha:</p>
+      <div class="code"><div class="lbl">/home/usuario/helpnow-config.php<button class="copy" type="button">Copiar</button></div><pre>&lt;?php
+return [
+  'APPS_SCRIPT_URL' =&gt; 'https://script.google.com/macros/s/XXXXXXXX/exec',
+  'SHARED_SECRET'   =&gt; 'cole-aqui-o-secret-do-setup',
+  'ALLOWED_ORIGINS' =&gt; ['https://helpnowsolucoes.com.br', 'https://www.helpnowsolucoes.com.br'],
+  'MOCK'            =&gt; false,
+];</pre></div>
+
+      <h3>5.4 Teste rápido da API</h3>
+      <div class="code"><div class="lbl">Abra no navegador, nesta ordem<button class="copy" type="button">Copiar</button></div><pre>https://helpnowsolucoes.com.br/api/agenda.php?action=health
+https://helpnowsolucoes.com.br/api/agenda.php?action=slots&amp;from=2026-10-15&amp;to=2026-10-23</pre></div>
+      <p>O primeiro deve mostrar <code>"mode":"live"</code> (se mostrar <code>"mock"</code>, o arquivo de configuração não foi encontrado). O segundo deve voltar um JSON com <code>"days"</code> e horários. Se der erro, veja <a href="#problemas">Se algo der errado</a>; o log técnico fica em <code>/home/usuario/helpnow-agenda.log</code>.</p>
+
+      <ul class="checks">
+        <li><label><input type="checkbox" id="c5-1"><span>Conteúdo de public_html/ enviado para o servidor (com .htaccess).</span></label></li>
+        <li><label><input type="checkbox" id="c5-2"><span>helpnow-config.php preenchido fora do public_html.</span></label></li>
+        <li><label><input type="checkbox" id="c5-3"><span>/api/agenda.php?action=slots retorna JSON com horários.</span></label></li>
+        <li><label><input type="checkbox" id="c5-4"><span>https://helpnowsolucoes.com.br e /agendamento abrem com cadeado, inclusive pelo celular.</span></label></li>
+      </ul>
+    </section>
+
+    <!-- 06 -->
+    <section class="step" id="s6">
+      <div class="step-head"><div class="num">06</div><div><h2>Teste ponta a ponta</h2><div class="where">Celular, como o cliente faria</div></div></div>
+      <p>Faça um agendamento real com um e-mail pessoal (não o comercial@) e confira cada efeito:</p>
+      <ul class="checks">
+        <li><label><input type="checkbox" id="c6-1"><span>Escolhi um dia/horário e confirmei; a tela 3 mostrou a confirmação.</span></label></li>
+        <li><label><input type="checkbox" id="c6-2"><span>O evento "Diagnóstico HelpNow — Empresa" apareceu na agenda do comercial@ com link do Meet.</span></label></li>
+        <li><label><input type="checkbox" id="c6-3"><span>O convite chegou no e-mail de teste, junto com a confirmação da HelpNow.</span></label></li>
+        <li><label><input type="checkbox" id="c6-4"><span>O comercial@ recebeu o aviso de novo agendamento.</span></label></li>
+        <li><label><input type="checkbox" id="c6-5"><span>Uma linha nova apareceu na aba Leads com todos os campos e Status "Agendado".</span></label></li>
+        <li><label><input type="checkbox" id="c6-6"><span>Recarreguei o /agendamento: o horário usado sumiu da lista.</span></label></li>
+        <li><label><input type="checkbox" id="c6-7"><span>Abri com <code>?origem=universo-totvs</code>: "Como nos encontrou?" veio preenchido com Universo TOTVS.</span></label></li>
+        <li><label><input type="checkbox" id="c6-8"><span>Apaguei o evento de teste e marquei a linha como "Cancelado".</span></label></li>
+      </ul>
+      <div class="note tip"><b>Lembrete de 1 dia antes</b><p>Para testar sem esperar, agende um horário para o dia seguinte e rode manualmente a função de lembrete no Apps Script.</p></div>
+    </section>
+
+    <!-- 07 -->
+    <section class="step" id="s7">
+      <div class="step-head"><div class="num">07</div><div><h2>WhatsApp Business</h2><div class="where">App no celular · Ferramentas comerciais</div></div></div>
+      <ol class="howto">
+        <li><strong>Configurações → Ferramentas comerciais → Mensagem de saudação</strong> → ativar.</li>
+        <li>Cole a mensagem abaixo. Destinatários: <strong>Todos</strong>.</li>
+        <li>A saudação é enviada quando a pessoa fala com o número pela primeira vez ou após 14 dias sem conversa. Teste de outro celular que nunca falou com o número.</li>
+      </ol>
+      <div class="code"><div class="lbl">Mensagem de saudação<button class="copy" type="button">Copiar</button></div><pre>Olá! Que bom te ver por aqui. Aqui é a HelpNow, consultoria e gestão de negócios para TOTVS RM e Protheus.
+
+Garanta seus 60 minutos com um especialista para investigar um problema real do seu backoffice. Escolha o melhor dia e horário:
+
+https://helpnowsolucoes.com.br/agendamento?origem=universo-totvs
+
+Se preferir, é só responder aqui que um especialista fala com você. Juntos vamos mais longe!</pre></div>
+      <div class="note tip"><b>Depois do evento</b><p>Troque o final do link para <code>?origem=instagram</code> ou remova o parâmetro, para a planilha separar quem veio do Universo TOTVS.</p></div>
+      <ul class="checks">
+        <li><label><input type="checkbox" id="c7-1"><span>Saudação ativa com o link correto.</span></label></li>
+        <li><label><input type="checkbox" id="c7-2"><span>QR Code do cartão testado de outro celular: chegou a saudação e o link abriu.</span></label></li>
+      </ul>
+    </section>
+
+    <!-- PLANO B -->
+    <section class="step" id="planob">
+      <div class="step-head"><div class="num">B</div><div><h2>Plano B para terça</h2><div class="where">Só se o site não estiver no ar a tempo</div></div></div>
+      <p>A Google Agenda tem uma página de agendamento pronta (o Business Starter permite uma). Ela não tem o visual da HelpNow nem grava na planilha, mas mostra os horários livres e cria o Meet.</p>
+      <ol class="howto">
+        <li>Logado como comercial@, em calendar.google.com: <strong>Criar → Agendamento de horários</strong>.</li>
+        <li>Título "Diagnóstico HelpNow — 60 min", duração 1h, seg–sex 9h–12h e 14h–18h, início em 15/10, videoconferência Google Meet.</li>
+        <li>No formulário de reserva, adicione as perguntas: Empresa, WhatsApp, ERP utilizado, Problema a investigar.</li>
+        <li>Salve, copie o link da página e use na saudação do WhatsApp até o site ficar pronto.</li>
+      </ol>
+    </section>
+
+    <!-- PROBLEMAS -->
+    <section class="step" id="problemas">
+      <div class="step-head"><div class="num">?</div><div><h2>Se algo der errado</h2><div class="where">Sintoma → causa provável → correção</div></div></div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Sintoma</th><th>Causa provável</th><th>Correção</th></tr></thead>
+          <tbody>
+            <tr><td>E-mail @helpnowsolucoes parou de chegar</td><td>MX sumiu ou aponta para a HostGator</td><td>Recriar MX <code>smtp.google.com</code> (prio 1) e Roteamento de e-mail "remoto"</td></tr>
+            <tr><td>Opção "Qualquer pessoa" não aparece ao implantar</td><td>Compartilhamento externo desativado</td><td>Etapa 1.3 e aguardar alguns minutos</td></tr>
+            <tr><td>API devolve HTML de login do Google</td><td>URL errada (<code>/dev</code>) ou acesso restrito</td><td>Usar a URL <code>/exec</code> e acesso "Qualquer pessoa"</td></tr>
+            <tr><td>API devolve "unauthorized"</td><td>Secret diferente entre PHP e script</td><td>Copiar de novo das Propriedades do script</td></tr>
+            <tr><td>Nenhum horário aparece</td><td>Data de início, fuso ou agenda cheia</td><td>Conferir <code>START_DATE</code>, fuso de Brasília e eventos "Ocupado"</td></tr>
+            <tr><td>Evento criado sem link do Meet</td><td>Serviço avançado não adicionado</td><td>Etapa 4.2, item 3, e publicar nova versão</td></tr>
+            <tr><td>Mudei o código e nada mudou</td><td>Implantação antiga ainda ativa</td><td>Gerenciar implantações → Nova versão</td></tr>
+            <tr><td>Site sem cadeado / aviso de segurança</td><td>SSL ainda não emitido</td><td>Aguardar propagação do DNS e reemitir em SSL/TLS Status</td></tr>
+            <tr><td>Página /agendamento dá 404</td><td><code>.htaccess</code> não enviado</td><td>Mostrar ocultos e reenviar o conteúdo de <code>public_html/</code></td></tr>
+            <tr><td><code>?action=health</code> mostra "mock"</td><td><code>helpnow-config.php</code> fora do diretório inicial</td><td>Ele fica ao lado da pasta public_html, não dentro dela</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="foot">HelpNow Soluções · CNPJ 49.739.083/0001-24 · Guia de implantação v1 · outubro/2026. Os nomes de menus podem variar um pouco conforme a versão de cada painel.</p>
+  </main>
+</div>
+
+<script>
+(function(){
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.checks input[type=checkbox]'));
+  var KEY = 'helpnow-guia-v1';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e) { saved = {}; }
+  function update(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    document.getElementById('count').textContent = done + ' de ' + boxes.length + ' itens';
+    document.getElementById('barfill').style.width = (boxes.length ? (done / boxes.length * 100) : 0) + '%';
+  }
+  boxes.forEach(function(b){
+    if (saved[b.id]) b.checked = true;
+    b.addEventListener('change', function(){
+      saved[b.id] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch(e) {}
+      update();
+    });
+  });
+  document.getElementById('reset').addEventListener('click', function(){
+    boxes.forEach(function(b){ b.checked = false; });
+    saved = {};
+    try { localStorage.removeItem(KEY); } catch(e) {}
+    update();
+  });
+  update();
+
+  document.querySelectorAll('.code').forEach(function(block){
+    var btn = block.querySelector('.copy'); var pre = block.querySelector('pre');
+    if (!btn || !pre) return;
+    btn.addEventListener('click', function(){
+      var text = pre.innerText;
+      function ok(){ btn.textContent = 'Copiado'; btn.classList.add('done'); setTimeout(function(){ btn.textContent = 'Copiar'; btn.classList.remove('done'); }, 1600); }
+      function fallback(){ var r = document.createRange(); r.selectNodeContents(pre); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selecionado — Ctrl+C'; }
+      try { navigator.clipboard.writeText(text).then(ok, fallback); } catch(e) { fallback(); }
+    });
+  });
+})();
+</script>
