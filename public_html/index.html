@@ -18,10 +18,9 @@
   <meta property="og:image" content="https://helpnowsolucoes.com.br/assets/img/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=1">
+  <link rel="preload" href="/assets/fonts/sora.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/styles.css?v=2">
 
   <script type="application/ld+json">
   {
@@ -45,7 +44,7 @@
 <!-- ================= HEADER ================= -->
 <header class="site-header" id="topo-header">
   <div class="container">
-    <a class="brand" href="/" aria-label="HelpNow — página inicial">
+    <a class="brand" href="/">
       <svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="66,104 84,104 98,16 80,16" fill="#E6EBF5"/><path d="M38,76 Q66,56 102,52" fill="none" stroke="#060D2B" stroke-width="25" stroke-linecap="round"/><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#060D2B" stroke="#060D2B" stroke-width="11" stroke-linejoin="round"/><polygon points="26,104 44,104 58,16 40,16" fill="#2E6BFF"/><path d="M38,76 Q66,56 102,52" fill="none" stroke="#2E6BFF" stroke-width="13" stroke-linecap="round"/><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#2E6BFF" stroke="#2E6BFF" stroke-width="2" stroke-linejoin="round"/></svg>
       <span class="wordmark">HELP<span>NOW</span></span>
     </a>
@@ -88,12 +87,12 @@
         <li class="jcard reveal">
           <div class="jcard__top"><span class="jcard__num" aria-hidden="true">01</span>
             <svg class="jcard__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg></div>
-          <h3>Iniciamos pelo seu negócio</h3>
+          <h2>Iniciamos pelo seu negócio</h2>
           <p>Entendemos sua operação, pessoas e números — esteja você no TOTVS, em outro ERP ou na planilha.</p>
         </li>
         <li class="jcard jcard--featured reveal">
           <div class="jcard__top"><span class="jcard__num" aria-hidden="true">02</span><span class="jcard__badge">60 MIN · GRÁTIS</span></div>
-          <h3>Diagnosticamos</h3>
+          <h2>Diagnosticamos</h2>
           <p>Uma hora com um especialista para investigar um problema real do seu backoffice.</p>
           <a class="jcard__link" href="/agendamento">Agendar agora
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
@@ -101,13 +100,13 @@
         <li class="jcard reveal">
           <div class="jcard__top"><span class="jcard__num" aria-hidden="true">03</span>
             <svg class="jcard__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17.5 14v7M14 17.5h7"/></svg></div>
-          <h3>Estruturamos a solução</h3>
+          <h2>Estruturamos a solução</h2>
           <p>Processo redesenhado e ERP ajustado — RM, Protheus ou o primeiro passo para sair da planilha.</p>
         </li>
         <li class="jcard reveal">
           <div class="jcard__top"><span class="jcard__num" aria-hidden="true">04</span>
             <svg class="jcard__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 6-7"/><path d="M15 6h5v5"/></svg></div>
-          <h3>Acompanhamos a evolução</h3>
+          <h2>Acompanhamos a evolução</h2>
           <p>Indicadores, sustentação e melhoria contínua. Juntos vamos mais longe.</p>
         </li>
       </ol>
@@ -258,7 +257,7 @@
 <footer class="site-footer">
   <div class="container">
     <div class="footer__brand">
-      <a class="brand" href="/" aria-label="HelpNow — página inicial">
+      <a class="brand" href="/">
         <svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="66,104 84,104 98,16 80,16" fill="#E6EBF5"/><path d="M38,76 Q66,56 102,52" fill="none" stroke="#060D2B" stroke-width="25" stroke-linecap="round"/><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#060D2B" stroke="#060D2B" stroke-width="11" stroke-linejoin="round"/><polygon points="26,104 44,104 58,16 40,16" fill="#2E6BFF"/><path d="M38,76 Q66,56 102,52" fill="none" stroke="#2E6BFF" stroke-width="13" stroke-linecap="round"/><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#2E6BFF" stroke="#2E6BFF" stroke-width="2" stroke-linejoin="round"/></svg>
         <span><span class="wordmark">HELP<span>NOW</span></span><span class="footer__sub" style="display:block">CONSULTORIA E GESTÃO DE NEGÓCIOS</span></span>
       </a>
@@ -292,6 +291,6 @@
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12Z"/></svg>
 </a>
 
-<script src="/assets/js/main.js?v=1" defer></script>
+<script src="/assets/js/main.js?v=2" defer></script>
 </body>
 </html>

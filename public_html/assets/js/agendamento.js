@@ -147,8 +147,9 @@
       b.dataset.date = date;
       b.disabled = !available;
       b.setAttribute('aria-pressed', 'false');
-      b.setAttribute('aria-label', longLabelPretty(date) + (available ? ' — ' + slots.length + ' horário(s) livre(s)' : ' — sem horários'));
-      b.innerHTML = '<span class="day-btn__dow">' + DOW_SHORT[dow(date)] + '</span><span class="day-btn__num">' + toUTC(date).getUTCDate() + '</span>';
+      // Nome acessível completo via texto oculto (aria-label divergente do texto visível falha em "label in name").
+      b.innerHTML = '<span class="day-btn__dow" aria-hidden="true">' + DOW_SHORT[dow(date)] + '</span><span class="day-btn__num" aria-hidden="true">' + toUTC(date).getUTCDate() + '</span>' +
+        '<span class="sr-only">' + longLabelPretty(date) + (available ? ' — ' + slots.length + ' horário(s) livre(s)' : ' — sem horários') + '</span>';
       b.addEventListener('click', onPickDay);
       el.days.appendChild(b);
     }

@@ -4,6 +4,11 @@
    Tokens de design documentados em docs/02-design-system.md
    ========================================================================== */
 
+/* Fontes hospedadas (subset latino, variáveis). font-display: swap evita texto invisível. */
+@font-face { font-family: "Sora"; font-style: normal; font-weight: 600 800; font-display: swap; src: url("/assets/fonts/sora.woff2") format("woff2"); }
+@font-face { font-family: "Manrope"; font-style: normal; font-weight: 400 800; font-display: swap; src: url("/assets/fonts/manrope.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 400 500; font-display: swap; src: url("/assets/fonts/jetbrains-mono.woff2") format("woff2"); }
+
 :root {
   /* Cores */
   --navy-950: #060D2B;   /* header, hero, footer */
@@ -68,7 +73,7 @@ button, input, select, textarea { font: inherit; }
   font-size: 13px;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--blue-500);
+  color: var(--blue-600); /* AA sobre fundo claro */
 }
 .kicker--cyan { color: var(--cyan-400); }
 
@@ -183,11 +188,11 @@ button, input, select, textarea { font: inherit; }
 .jcard__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .jcard__num { font-family: var(--font-display); font-weight: 800; font-size: 52px; line-height: 1; color: transparent; -webkit-text-stroke: 1.5px #8FB2FF; }
 .jcard__icon { width: 30px; height: 30px; color: #8FB2FF; }
-.jcard h3 { font-weight: 700; font-size: 22px; line-height: 1.2; }
+.jcard h2 { font-weight: 700; font-size: 22px; line-height: 1.2; }
 .jcard p { font-size: 15px; line-height: 1.6; color: var(--mist-300); }
 .jcard--featured { background: var(--blue-500); border-color: var(--blue-500); box-shadow: 0 20px 60px rgba(46,107,255,.35); }
 .jcard--featured .jcard__num { color: var(--white); -webkit-text-stroke: 0; }
-.jcard--featured p { color: #E3EAFF; }
+.jcard--featured p { color: var(--white); }
 .jcard__badge { background: var(--navy-950); color: var(--cyan-400); font-family: var(--font-mono); font-size: 12px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; }
 .jcard__link { margin-top: auto; color: var(--white); font-weight: 800; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
 .jcard__link:hover { color: var(--white); }
@@ -227,7 +232,7 @@ button, input, select, textarea { font: inherit; }
   font-family: var(--font-body); font-weight: 800; font-size: 15px;
   background: transparent; color: var(--mist-300); transition: background-color .2s ease, color .2s ease;
 }
-.toggle button[aria-selected="true"][data-view="hoje"] { background: var(--orange-500); color: var(--white); }
+.toggle button[aria-selected="true"][data-view="hoje"] { background: var(--orange-500); color: var(--navy-950); }
 .toggle button[aria-selected="true"][data-view="help"] { background: var(--blue-500); color: var(--white); }
 
 .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; list-style: none; margin: 0; padding: 0; }
@@ -238,7 +243,7 @@ button, input, select, textarea { font: inherit; }
 }
 .fcard__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .fcard__num { font-family: var(--font-display); font-weight: 800; font-size: 30px; line-height: 1; }
-.fcard__tag { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 5px 9px; border-radius: 6px; background: var(--orange-500); color: var(--white); }
+.fcard__tag { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 5px 9px; border-radius: 6px; background: var(--orange-500); color: var(--navy-950); }
 .fcard h3 { font-weight: 700; font-size: 18px; line-height: 1.25; }
 .fcard p { font-size: 15px; line-height: 1.55; color: var(--ink-600); }
 .view-help { display: none; }
@@ -301,7 +306,7 @@ button, input, select, textarea { font: inherit; }
 .seg--navy .seg__erp { color: var(--cyan-400); }
 .seg--blue { background: var(--blue-500); color: var(--white); }
 .seg--blue .seg__mark { background: var(--white); }
-.seg--blue p { color: #E3EAFF; }
+.seg--blue p { color: var(--white); }
 .seg--blue .seg__erp { color: var(--white); }
 
 /* ---------- CTA final ---------- */
@@ -312,7 +317,7 @@ button, input, select, textarea { font: inherit; }
 .badge60 span { font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .12em; color: var(--cyan-400); }
 .cta__text { flex: 999 1 460px; min-width: 0; }
 .cta h2 { margin: 0 0 14px; font-weight: 800; font-size: clamp(34px, 4.6vw, 50px); line-height: 1.04; letter-spacing: -0.04em; }
-.cta p { font-size: 19px; line-height: 1.6; color: #E3EAFF; max-width: 620px; margin-bottom: 30px; }
+.cta p { font-size: 19px; line-height: 1.6; color: var(--white); max-width: 620px; margin-bottom: 30px; }
 .cta__btns { display: flex; flex-wrap: wrap; gap: 14px; }
 
 /* ---------- Footer ---------- */
@@ -320,7 +325,7 @@ button, input, select, textarea { font: inherit; }
 .site-footer .container { padding-block: 64px 32px; display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; }
 .footer__brand { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
 .footer__brand .brand svg { width: 56px; height: 56px; }
-.footer__sub { font-family: var(--font-display); font-weight: 600; font-size: 9px; letter-spacing: .14em; margin-top: 4px; }
+.site-footer .footer__sub { color: var(--mist-300); font-family: var(--font-display); font-weight: 600; font-size: 9px; letter-spacing: .14em; margin-top: 4px; }
 .footer__slogan { font-family: var(--font-display); font-size: 18px; color: var(--white); }
 .footer__slogan strong { color: var(--cyan-400); }
 .footer__col { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 10px; font-size: 15px; }
