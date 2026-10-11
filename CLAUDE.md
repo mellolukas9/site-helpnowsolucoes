@@ -64,9 +64,11 @@ php -S localhost:8000 -t public_html tools/dev-router.php
 - [x] Fontes hospedadas em `assets/fonts` (woff2 latin); Lighthouse mobile local 99/100/100/100 (home, agendamento, política).
 - [x] Acessibilidade: contraste AA, ordem de headings, skip link em todas as páginas, alvos ≥ 44px.
 - [x] Revisão mobile (10/10): faixas cobrem a seção, carrossel em "Na prática", "Seu momento" 2×2, menu com X/scroll lock/foco, WhatsApp some sobre CTA/rodapé, home em 390px de ~9.900px para ~6.300px. CSS/JS/HTML com `?v=3`.
-- [ ] Configurar ambiente real (ver `docs/04-deploy-e-ambiente.md` e o guia HTML) e testar ponta a ponta em produção.
+- [x] Backend publicado (11/10): Apps Script no ar (Web App do comercial@, `setup()` rodado, gatilho do lembrete criado) e `helpnow-config.php` pronto. Testado local contra a agenda REAL: `health` = live, horários de 15/10 em diante (seg–sex, 9–12h/14–18h), feriado de 02/11 bloqueado, origem `universo-totvs` no payload.
+- [ ] Republicar o `Code.gs` atual no Apps Script (a versão no ar é a original; ver `docs/05-backlog.md`).
+- [ ] Upload (`dist/public_html.zip` + `helpnow-config.php` em `/home/este7243/`), teste ponta a ponta em produção, DKIM e mensagem de saudação do WhatsApp (ver `docs/05-backlog.md`).
 - [ ] Pendências em `docs/05-backlog.md`.
 
 ## Testes locais com PHP
-PHP 8.3 precisa de `mbstring` e `curl` habilitados no php.ini. Simulação de erros (só localhost, ignorada em produção):
+PHP 8.3 precisa de `mbstring` e `curl` habilitados no php.ini. Para falar com o Google (agenda real) no Windows é preciso também `curl.cainfo` apontando para um `cacert.pem` (senão: `UPSTREAM` por "unable to get local issuer certificate"); na HostGator isso já vem configurado. `localhost` já é aceito pelo `check_origin` — não é preciso mexer em `ALLOWED_ORIGINS`. Simulação de erros (só localhost, ignorada em produção):
 `POST /api/agenda.php?action=book&simulate=409` (ou 422, 429, 502).

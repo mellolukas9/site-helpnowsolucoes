@@ -1,6 +1,12 @@
 # 05 — Backlog
 
 ## Antes do lançamento (até 12/10)
+- [x] Backend do /agendamento publicado (Apps Script + planilha "leads"/aba Leads) e testado local contra a agenda real (11/10).
+- [ ] **Republicar o `apps-script/Code.gs` atual** no editor do Apps Script: Implantar → Gerenciar implantações → editar → **Nova versão** (mesma implantação, a URL `/exec` não muda). A versão no ar é a original; a atual acrescenta neutralização de fórmulas na planilha, nova tentativa + e-mail de emergência se a gravação falhar, e validação igual à do PHP. O contrato da API não mudou — o site funciona com qualquer das duas versões, mas publique a nova antes do lançamento.
+- [ ] Upload: `dist/public_html.zip` extraído em `public_html/` e `helpnow-config.php` em `/home/este7243/` (fora do `public_html`). Conferir `https://helpnowsolucoes.com.br/api/agenda.php?action=health` → `"mode":"live","config":true`.
+- [ ] Teste ponta a ponta em produção (1 agendamento real com e-mail de teste: evento + Meet + linha na planilha + e-mail de confirmação + aviso ao comercial@).
+- [ ] DKIM no Google Workspace e DNS (SPF/DMARC) — sem isso os e-mails de confirmação podem cair em spam.
+- [ ] Mensagem de saudação do WhatsApp Business com `https://helpnowsolucoes.com.br/agendamento?origem=universo-totvs`.
 - [x] Gerar `public_html/assets/img/og-image.png` (1200×630, fundo navy, logo + "A gestão do seu negócio, organizada passo a passo.") — já referenciada nas metatags.
 - [x] Revisão visual com `/frontend-design` e `/ui-ux-pro-max-skill` (sem mudar copy/direção).
 - [x] Lighthouse mobile ≥ 90 nas 4 categorias (local: 99/100/100/100). Reconferir em produção (compressão e cache vêm do .htaccess).
