@@ -90,7 +90,8 @@
   var ICON_ALERT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>';
   function showAlert(type, html) { el.alert.innerHTML = '<div class="alert alert--' + type + '">' + ICON_ALERT + '<div>' + html + '</div></div>'; el.alert.style.marginBottom = '18px'; }
   function clearAlert() { el.alert.innerHTML = ''; el.alert.style.marginBottom = '0'; }
-  function waLink(text) { return '<a href="' + CONFIG.WHATSAPP + '" target="_blank" rel="noopener">' + (text || 'fale com a gente no WhatsApp') + '</a>'; }
+  /** Só TEXTO (sem link/botão): o /agendamento tem um único objetivo. O WhatsApp fica como alternativa escrita. */
+  function waLink(text) { return (text || 'fale com a gente pelo WhatsApp') + ' (21) 96844-1647'; }
 
   /* ---------- API ---------- */
   function request(url, opts) {
@@ -142,17 +143,20 @@
     renderHold(left);
   }
 
-  var ARC_LEN = 2 * Math.PI * 80; // circunferência do arco do cronômetro (r=80)
-
-  /** Cronômetro do hero: idle ("60") · hold (mm:ss + arco que esvazia) · done (arco cheio + check). */
-  function setChrono(name, frac, clock) {
+  /**
+   * Cronômetro do hero: idle ("60" + animação de carregamento em loop, só CSS) · hold (mm:ss; o arco CARREGA de 0 a 100 %
+   * conforme a reserva passa) · done (anel cheio + check). `frac` = fração de tempo RESTANTE; `low` = últimos 30 s (laranja).
+   */
+  function setChrono(name, frac, clock, low) {
     var c = el.chrono;
     if (!c) return;
     c.setAttribute('data-state', name);
-    var arc = c.querySelector('.chrono__arc');
-    if (name === 'idle') { arc.removeAttribute('style'); return; }
-    var f = name === 'done' ? 1 : Math.max(0, Math.min(1, frac));
-    arc.style.strokeDasharray = (f * ARC_LEN).toFixed(1) + ' ' + ARC_LEN.toFixed(1);
+    var fill = c.querySelector('.chrono__fill'), tip = c.querySelector('.chrono__tip');
+    if (name === 'idle') { fill.removeAttribute('style'); tip.removeAttribute('style'); c.classList.remove('is-low'); return; }
+    var remaining = name === 'done' ? 0 : Math.max(0, Math.min(1, frac));
+    fill.style.strokeDashoffset = (remaining * 100).toFixed(2);                    // pathLength = 100
+    tip.style.transform = 'rotate(' + ((1 - remaining) * 360).toFixed(1) + 'deg)';
+    c.classList.toggle('is-low', name === 'hold' && !!low);
     if (clock != null) c.querySelector('.chrono__time').textContent = clock;
   }
 
@@ -162,7 +166,7 @@
     if (!h) return;
     var sec = Math.ceil(left / 1000);
     var frac = Math.max(0, Math.min(1, left / h.total));
-    setChrono('hold', frac, fmtClock(sec));
+    setChrono('hold', frac, fmtClock(sec), sec <= 30);
     if (state.step !== 2) return;
     el.holdTime.textContent = fmtClock(sec);
     el.holdFill.style.transform = 'scaleX(' + frac + ')';

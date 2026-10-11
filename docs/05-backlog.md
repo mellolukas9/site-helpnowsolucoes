@@ -17,6 +17,7 @@
 - [ ] Atualizar o Apps Script publicando **nova versão na mesma implantação** (Code.gs mudou nesta rodada).
 - [ ] Se o site ficar atrás de proxy/CDN: o rate limit usa `REMOTE_ADDR`; avaliar `X-Forwarded-For` confiável.
 
+- [ ] Conferir visualmente em um notebook real (1366×768) o `/agendamento` sem rolagem, nos 3 passos, e o cronômetro carregando na home.
 - [ ] Conferir o contador da campanha em produção: `https://helpnowsolucoes.com.br/api/agenda.php?action=stats` → `{"ok":true,"used":N,"cap":100}` (mudar `CAMPAIGN_CAP`/`CAMPAIGN_ORIGIN` no `CONFIG` do Code.gs se preciso).
 - [x] Faixa da campanha: opção A aprovada (rodada 3, sem "estande", com "gratuitos"); B e C comentadas no HTML se o cliente mudar de ideia.
 - [ ] Testar a importação do `.ics` no Google Agenda/Outlook e os links do Outlook com contas reais (só validado o formato localmente).

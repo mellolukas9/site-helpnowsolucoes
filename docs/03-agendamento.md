@@ -124,12 +124,16 @@ Validação: `agenda.php` (`clean()`) e `Code.gs` (`sanitize_`/`validate_`) apli
 `CAMPAIGN_ORIGIN: 'universo-totvs'` e `CAMPAIGN_CAP: 100` definem o contador; `HOLD_SECONDS: 180` (3 min) a reserva; `STATS_CACHE_SECONDS: 60` o cache do `stats` (invalidado a cada agendamento).
 Faixa no hero da home e do `/agendamento` (`assets/js/campaign.js`). Copy (opção A, rodada 3): "Universo TOTVS: 100 diagnósticos de 1 hora, gratuitos, para quem nos conheceu no evento." As opções B e C ficam comentadas no HTML, ao lado da faixa. O card "02 Diagnosticamos" repete a mensagem ("Gratuito por tempo limitado — vagas limitadas." / "… restam X vagas." com número real).
 
-## Cronômetro (rodada 3)
-- **Home (CTA final):** relógio gigante decorativo na lateral esquerda (`.cta__clock`, SVG inline; diâmetro `--cta-d` ≈ 620 px, ~140 % da altura da seção; sangra à esquerda/em cima/embaixo). A coroa e o botão lateral ficam à direita do mostrador para continuarem visíveis apesar do corte. < 900 px vira fundo decorativo (opacidade .34, escurecido, para o texto manter AA). Arco + ponteiro dão uma volta de 60 s; estático com `prefers-reduced-motion`.
-- **/agendamento (hero):** o mesmo selo (110 px desktop / 96 px mobile) é o **timer real da reserva**, na mesma fonte de tempo da barra do passo 2: sem horário = "60 MINUTOS"; reserva ativa = `m:ss` + "RESERVADO" e o arco esvazia; expirou = volta ao estado inicial; agendado = arco cheio + check.
+## Cronômetro (rodada 4)
+Mesmo SVG inline nos dois usos; o arco é uma **barra de carregamento circular** (trilho translúcido + arco ciano com ponta arredondada e um ponto brilhante na ponta; `stroke-dasharray`/`stroke-dashoffset` com `pathLength="100"`, começando às 12h e enchendo no sentido horário). Nunca gira.
+- **Home (CTA final):** relógio inteiro (280 px ≥ 1100 px; 210 px de 700 a 1024 px; 160 px acima do título em ≤ 699 px), coluna à esquerda do texto, centralizado na vertical, ≥ 48 px de respiro, alinhado ao container; fundo da seção segue o azul #2E6BFF. Animação decorativa: 0 → 100 % em 8 s, cheio por 1 s, 0,6 s de fade e reinício (9,6 s). `prefers-reduced-motion`: estático em 75 %.
+- **/agendamento (hero do card, 140 px desktop / 110 px mobile):** é o **timer real da reserva** (3 min) e usa a mesma fonte de tempo da barra do passo 2 (`tick()` em `agendamento.js`): sem horário = "60 MINUTOS" + loop de carregamento; reserva ativa = `m:ss` + "RESERVADO" e o arco ENCHE conforme o tempo passa; últimos 30 s = arco e texto laranja #FF7A45; expirou = volta ao estado inicial (+ mensagem e recarga dos horários); agendado = anel cheio + check. Trocar de horário reinicia.
 
-## "Adicionar à minha agenda" (passo 3)
-Gerado no navegador a partir do `start`/`end` ISO (UTC) da API: Google Agenda, Outlook/Microsoft 365 (`outlook.office.com`), Outlook.com (`outlook.live.com`) e `.ics` (`diagnostico-helpnow.ics`; UID, DTSTAMP, DTSTART/DTEND em UTC, SUMMARY "Diagnóstico HelpNow", DESCRIPTION/URL/LOCATION com o link do Meet). Sem `meetLink`, os botões aparecem sem o link.
+## Layout do /agendamento (rodada 4)
+- Sem botão/flutuante de WhatsApp (a página tem um único objetivo). Mensagens de erro citam o WhatsApp só como texto.
+- Desktop/notebook (≥ 900 × 640): a página inteira cabe na tela (`100dvh`, sem rolagem da página). O passo 1 centraliza dias e horários; no passo 2 o resumo e a barra de reserva ficam lado a lado. Se um passo não couber (tela baixa ou muitos erros de validação), **só o painel dele rola**. Abaixo de 860 px de altura o texto longo e o rodapé do card lateral são ocultados.
+- Mobile/tablet: rolagem natural.
+- Logo do header igual ao da home (ícone 44 px, wordmark 24 px).
 
 ## Planilha "HelpNow — Leads" (aba Leads)
 `Registrado em | Data reunião | Horário | Nome | Empresa | WhatsApp | E-mail | ERP | Como nos encontrou | Origem (URL) | Assunto/Momento | Problema | ID do evento | Link do Meet | Status | Lembrete enviado`
