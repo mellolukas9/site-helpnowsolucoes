@@ -7,7 +7,8 @@
  *
  * O que faz:
  *  - doGet  ?action=slots : devolve os horários livres (regras de CONFIG + agenda real + feriados)
- *  - doPost  action=book  : revalida o horário, cria o evento com Google Meet, convida o cliente,
+ *  - doPost  action=book  : recusa duplicidade (mesmo e-mail ou WhatsApp com status ≠ Cancelado → DUPLICATE),
+ *                           revalida o horário, cria o evento com Google Meet, convida o cliente,
  *                           grava a linha na aba "Leads" e envia e-mails
  *  - doGet  ?action=stats : { used, cap } da campanha (leads com origem = CAMPAIGN_ORIGIN e status ≠ Cancelado)
  *  - doPost action=hold|release : reserva temporária (3 min) de um horário, via CacheService
@@ -27,7 +28,7 @@ const CONFIG = {
   SLOT_HOURS: [9, 10, 11, 14, 15, 16, 17], // 9–12h e 14–18h (almoço 12–14 bloqueado)
   SLOT_MINUTES: 60,
   MIN_NOTICE_HOURS: 2,
-  HORIZON_DAYS: 30,
+  END_DATE: '2026-12-20', // último dia da agenda (inclusive); a agenda abre de max(hoje, START_DATE) até aqui
   NOTIFY_EMAIL: 'comercial@helpnowsolucoes.com.br',
   SENDER_NAME: 'HelpNow',
   WHATSAPP: 'https://wa.me/5521968441647',
@@ -95,7 +96,7 @@ function getSlots_(from, to, ownHoldId) {
 function getSlotsBase_(from, to) {
   const today = todayStr_();
   const first = maxStr_(today, CONFIG.START_DATE);
-  const last = addDays_(today, CONFIG.HORIZON_DAYS);
+  const last = CONFIG.END_DATE;
   if (!isDate_(from)) from = first;
   if (!isDate_(to)) to = addDays_(from, 6);
   if (to < from) to = from;
@@ -139,7 +140,7 @@ function isCandidate_(date, time) {
   if (!isDate_(date) || !/^\d{2}:00$/.test(time)) return false;
   const h = parseInt(time, 10);
   const today = todayStr_();
-  if (date < maxStr_(today, CONFIG.START_DATE) || date > addDays_(today, CONFIG.HORIZON_DAYS)) return false;
+  if (date < maxStr_(today, CONFIG.START_DATE) || date > CONFIG.END_DATE) return false;
   if (CONFIG.WEEKDAYS.indexOf(weekday_(date)) < 0) return false;
   if (CONFIG.SLOT_HOURS.indexOf(h) < 0) return false;
   if (slotStart_(date, h).getTime() < Date.now() + CONFIG.MIN_NOTICE_HOURS * 3600 * 1000) return false;
@@ -302,6 +303,12 @@ function book_(b) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(20000)) return { ok: false, code: 'BUSY' };
   try {
+    // Um agendamento por e-mail e por WhatsApp (status ≠ Cancelado). Antes de qualquer outra coisa:
+    // nada é criado (evento, linha, e-mail) e a reserva temporária é liberada.
+    if (findDuplicate_(data.email, data.whatsapp)) {
+      dropHold_(data.date, data.time, data.holdId);
+      return { ok: false, code: 'DUPLICATE' };
+    }
     if (!isCandidate_(data.date, data.time)) return { ok: false, code: 'SLOT_TAKEN' };
     // reserva de outra pessoa neste horário → ocupado. Sem reserva (ou reserva própria) → segue.
     const heldBy = CacheService.getScriptCache().get(holdKey_(data.date, data.time));
@@ -347,6 +354,42 @@ function book_(b) {
   } finally {
     lock.releaseLock();
   }
+}
+
+/* ---------- Duplicidade ---------- */
+/** E-mail normalizado: sem prefixo ' (proteção de fórmula), trim e minúsculas. */
+function normEmail_(v) { return String(v == null ? '' : v).replace(/^'/, '').trim().toLowerCase(); }
+
+/**
+ * Chave do WhatsApp: só dígitos; sem o 55 do país quando tiver 12–13 dígitos; chave = DDD + últimos 8 dígitos.
+ * Assim "(21) 96844-1647", "21968441647", "+55 21 96844-1647" e o número antigo sem o 9 caem na mesma chave.
+ * Menos de 10 dígitos → '' (nunca bate).
+ */
+function phoneKey_(v) {
+  let d = String(v == null ? '' : v).replace(/\D/g, '');
+  if ((d.length === 12 || d.length === 13) && d.indexOf('55') === 0) d = d.slice(2);
+  if (d.length < 10 || d.length > 11) return '';
+  return d.slice(0, 2) + d.slice(-8);
+}
+
+/** Pura (testável): rows = linhas da aba Leads SEM o cabeçalho. Ignora status "Cancelado". */
+function isDuplicateLead_(rows, email, whatsapp) {
+  const e = normEmail_(email), k = phoneKey_(whatsapp);
+  const cMail = COLS.indexOf('E-mail'), cZap = COLS.indexOf('WhatsApp'), cStatus = COLS.indexOf('Status');
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (String(r[cStatus] == null ? '' : r[cStatus]).trim() === 'Cancelado') continue;
+    if (e && normEmail_(r[cMail]) === e) return true;
+    if (k && phoneKey_(r[cZap]) === k) return true;
+  }
+  return false;
+}
+
+function findDuplicate_(email, whatsapp) {
+  const sh = sheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return false;
+  return isDuplicateLead_(sh.getRange(2, 1, last - 1, COLS.length).getValues(), email, whatsapp);
 }
 
 /** Grava o lead na planilha com até 3 tentativas. Retorna true se gravou. */

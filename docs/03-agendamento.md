@@ -29,11 +29,11 @@ Apps Script  (comercial@ · Code.gs)
 | Horários | 09, 10, 11, 14, 15, 16, 17h (reuniões de 60 min; almoço 12–14h bloqueado) |
 | Intervalo entre reuniões | nenhum |
 | Antecedência mínima | 2 horas |
-| Horizonte | 30 dias a partir de hoje |
+| Fim da agenda | **20/12/2026** (`CONFIG.END_DATE`, inclusive). Horários de `max(hoje, START_DATE)` até `END_DATE`; sem horizonte rolante |
 | Feriados | agenda "Feriados no Brasil" + lista de reserva no código |
 | Bloqueio manual | qualquer evento "Ocupado" na agenda do comercial@ |
 
-O front (`agendamento.js`) repete `START_DATE` e `HORIZON_DAYS` apenas para navegação; quem decide é o Apps Script.
+O front (`agendamento.js`) repete `START_DATE` e `END_DATE` apenas para navegação; quem decide é o Apps Script.
 
 ## Contrato da API (front ↔ PHP)
 ### `GET /api/agenda.php?action=slots&from=YYYY-MM-DD&to=YYYY-MM-DD`
@@ -58,6 +58,7 @@ Respostas:
 |---|---|---|
 | 200 | `{ ok:true, eventId, start, end, meetLink }` | Passo 3 |
 | 409 | `{ ok:false, code:"SLOT_TAKEN" }` | Volta ao passo 1, recarrega, avisa |
+| 409 | `{ ok:false, code:"DUPLICATE" }` | Fica no passo 2, mantém os campos e mostra o aviso de duplicidade (abaixo) |
 | 422 | `{ ok:false, code:"VALIDATION", fields:{campo:msg} }` | Marca campos |
 | 429 | `{ ok:false, code:"RATE_LIMIT" }` | Pede para aguardar / WhatsApp |
 | 502 | `{ ok:false, code:"UPSTREAM" }` | Erro + WhatsApp |
@@ -107,8 +108,18 @@ Validação: `agenda.php` (`clean()`) e `Code.gs` (`sanitize_`/`validate_`) apli
 - Stats: `GET {URL}?action=stats&secret`
 - Hold/Release: `POST {URL}` com `{action:"hold"|"release", secret, date, time, holdId}` (mesmo formato do book)
 - Book: `POST {URL}` com corpo JSON `{action:"book", secret, ...dados}` e `Content-Type: text/plain`.
-- O Apps Script sempre responde HTTP 200; o resultado vem em `ok`/`code` (`UNAUTHORIZED`, `SLOT_TAKEN`, `VALIDATION`, `BUSY`, `INTERNAL`). O PHP traduz para o status HTTP.
+- O Apps Script sempre responde HTTP 200; o resultado vem em `ok`/`code` (`UNAUTHORIZED`, `SLOT_TAKEN`, `DUPLICATE`, `VALIDATION`, `BUSY`, `INTERNAL`). O PHP traduz para o status HTTP.
 - O `/exec` redireciona (302) para `script.googleusercontent.com`; o cURL segue como GET — comportamento correto.
+
+## Um agendamento por e-mail e por WhatsApp (`DUPLICATE`)
+No `book_` do Code.gs, **dentro do lock e antes de criar o evento**, a aba Leads é consultada. Há duplicidade se alguma linha com `Status` ≠ `Cancelado` tiver:
+- o **mesmo e-mail** (sem prefixo `'`, `trim`, minúsculas), **ou**
+- o **mesmo WhatsApp**: só dígitos; sem o `55` quando tiver 12–13 dígitos; chave = DDD + últimos 8 dígitos (assim máscara, `+55` e o 9º dígito não importam; o prefixo `'` da proteção de fórmula é ignorado).
+
+Resposta: `{ ok:false, code:"DUPLICATE" }` (Apps Script, HTTP 200) → o PHP devolve **HTTP 409** com `code:"DUPLICATE"` (diferente de `SLOT_TAKEN`). Nada é criado (evento, linha, e-mail) e a reserva temporária é liberada.
+**Privacidade:** a resposta e o aviso do front não dizem data, horário, nome nem qual campo coincidiu. Texto do front: "Já existe um agendamento com este e-mail ou WhatsApp. Para remarcar ou tirar dúvidas, fale com a gente no WhatsApp." (com link `wa.me`).
+Para liberar alguém (remarcação), basta mudar o `Status` da linha para `Cancelado`.
+Teste no mock/Pages: e-mail `duplicado@teste.com` ou WhatsApp `(11) 90000-0000`.
 
 ## Parâmetros de URL do /agendamento
 | Parâmetro | Efeito |
@@ -118,10 +129,10 @@ Validação: `agenda.php` (`clean()`) e `Code.gs` (`sanitize_`/`validate_`) apli
 | `momento=01..04` | Pré-escreve o problema conforme o card "Seu momento" |
 | `mock=1` | Modo demonstração 100% no navegador (reserva entre abas via localStorage) |
 | `holdttl=15` | Reserva de 15 s para testar a expiração (máx. 180; **só localhost** e `mock=1`) |
-| `simular=409\|422\|429\|502\|hold502\|holdrede` | Força a resposta do mock (teste) |
+| `simular=409\|422\|429\|502\|duplicado\|hold502\|holdrede` | Força a resposta do mock (teste) |
 
 ## Campanha Universo TOTVS (`CONFIG` do Code.gs)
-`CAMPAIGN_ORIGIN: 'universo-totvs'` e `CAMPAIGN_CAP: 100` definem o contador; `HOLD_SECONDS: 180` (3 min) a reserva; `STATS_CACHE_SECONDS: 60` o cache do `stats` (invalidado a cada agendamento).
+**Contador desligado (rodada 7):** `CAMPAIGN_COUNTER = false` em `assets/js/campaign.js` — o front não chama `stats` nem mostra "Restam X de N". A action `stats` continua existindo no PHP/Apps Script; para religar, `true`. `CAMPAIGN_ORIGIN: 'universo-totvs'` e `CAMPAIGN_CAP: 100` definem o contador; `HOLD_SECONDS: 180` (3 min) a reserva; `STATS_CACHE_SECONDS: 60` o cache do `stats` (invalidado a cada agendamento).
 Faixa no hero da home e do `/agendamento` (`assets/js/campaign.js`). Copy (opção A, rodada 3): "Universo TOTVS: 100 diagnósticos de 1 hora, gratuitos, para quem nos conheceu no evento." As opções B e C ficam comentadas no HTML, ao lado da faixa. O card "02 Diagnosticamos" repete a mensagem ("Gratuito por tempo limitado — vagas limitadas." / "… restam X vagas." com número real).
 
 ## Cronômetro (rodada 4)

@@ -5,7 +5,7 @@
    As regras de agenda valem de verdade no Apps Script; aqui elas só orientam a interface.
    Modo demonstração (sem backend): abra /agendamento?mock=1
      - ?holdttl=15            reserva de 15 s (testar a expiração; máx. 180) — só em localhost
-     - ?simular=409|422|429|502|hold502|holdrede   força a resposta do mock
+     - ?simular=409|422|429|502|duplicado|hold502|holdrede   força a resposta do mock
    ========================================================================== */
 (function () {
   'use strict';
@@ -13,7 +13,7 @@
   var CONFIG = {
     API: '/api/agenda.php',
     START_DATE: '2026-10-15',      // primeiro dia com agenda aberta
-    HORIZON_DAYS: 30,              // até quantos dias à frente mostrar
+    END_DATE: '2026-12-20',        // último dia da agenda (inclusive) — igual a CONFIG.END_DATE do Code.gs
     TIMEZONE: 'America/Sao_Paulo',
     TIMEOUT_MS: 15000,
     HOLD_SECONDS: 180,             // valor padrão (3 min); quem manda é o ttl devolvido pela API
@@ -49,7 +49,7 @@
 
   var TODAY = todaySP();
   var FIRST = maxStr(TODAY, CONFIG.START_DATE);
-  var LAST = addDays(TODAY, CONFIG.HORIZON_DAYS);
+  var LAST = CONFIG.END_DATE;
   var MIN_WEEK = mondayOf(FIRST);
   var MAX_WEEK = mondayOf(LAST);
 
@@ -78,7 +78,7 @@
   /* ---------- DOM ---------- */
   var $ = function (id) { return document.getElementById(id); };
   var el = {
-    alert: $('ag-alert'), weekLabel: $('week-label'), prev: $('week-prev'), next: $('week-next'),
+    endNote: $('ag-endnote'), dupNote: $('dup-note'), alert: $('ag-alert'), weekLabel: $('week-label'), prev: $('week-prev'), next: $('week-next'),
     days: $('days'), slotsTitle: $('slots-title'), slots: $('slots'), selection: $('selection-text'),
     toStep2: $('to-step-2'), summary: $('summary-text'), form: $('ag-form'), submit: $('submit-btn'),
     confirmTitle: $('confirm-title'), confirmWhen: $('confirm-when'), confirmEmail: $('confirm-email'),
@@ -270,6 +270,7 @@
     state.week = week;
     el.prev.disabled = week <= MIN_WEEK;
     el.next.disabled = week >= MAX_WEEK;
+    el.endNote.hidden = !(week >= MAX_WEEK || FIRST > LAST);
     var mid = addDays(week, 2);
     el.weekLabel.innerHTML = fmtMonth.format(toUTC(mid)).replace(' de ', ' ').toUpperCase() + '<span class="ag-month__hint"> · ESCOLHA O DIA</span>';
 
@@ -324,7 +325,9 @@
       if (state.hold || state.time) dropHold(true);
       state.date = null; state.time = null; updateSelection();
       el.slotsTitle.textContent = '';
-      el.slots.innerHTML = '<p class="ag-empty" style="grid-column:1/-1">Nenhum horário livre nesta semana. Veja a próxima semana ou ' + waLink() + '.</p>';
+      el.slots.innerHTML = (state.week >= MAX_WEEK || FIRST > LAST)
+        ? '<p class="ag-empty" style="grid-column:1/-1">Agenda disponível até 20 de dezembro. Para outras datas, ' + waLink() + '.</p>'
+        : '<p class="ag-empty" style="grid-column:1/-1">Nenhum horário livre nesta semana. Veja a próxima semana ou ' + waLink() + '.</p>';
     }
   }
 
@@ -426,6 +429,30 @@
     phone.value = out;
   });
 
+  /** Aviso de duplicidade junto aos campos de e-mail e WhatsApp (mensagem genérica: não diz qual campo bateu). */
+  function showDuplicate() {
+    ['whatsapp', 'email'].forEach(function (k) {
+      var input = $('f-' + k);
+      input.closest('.field').classList.add('has-error');
+      input.setAttribute('aria-invalid', 'true');
+      input.setAttribute('aria-describedby', 'dup-note');
+    });
+    el.dupNote.hidden = false;
+    el.dupNote.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  function clearDuplicate() {
+    if (el.dupNote.hidden) return;
+    el.dupNote.hidden = true;
+    ['whatsapp', 'email'].forEach(function (k) {
+      var input = $('f-' + k);
+      input.closest('.field').classList.remove('has-error');
+      input.removeAttribute('aria-invalid');
+      input.removeAttribute('aria-describedby');
+    });
+  }
+  $('f-email').addEventListener('input', clearDuplicate);
+  $('f-whatsapp').addEventListener('input', clearDuplicate);
+
   function setError(name, msg) {
     var input = $('f-' + name);
     var span = $('e-' + name);
@@ -460,6 +487,7 @@
     e.preventDefault();
     if (submitting) return;
     clearAlert();
+    clearDuplicate();
     var v = values();
     var errs = validate(v);
     ['nome', 'empresa', 'whatsapp', 'email', 'erp', 'canal', 'consent'].forEach(function (k) { setError(k, errs[k]); });
@@ -480,6 +508,12 @@
     api.book(payload).then(function (r) {
       if (r.status === 200 && r.data && r.data.ok) return showConfirmation(v, r.data);
       var code = r.data && r.data.code;
+      if (code === 'DUPLICATE') {
+        // sem revelar data, horário, nome nem qual campo bateu; mantém o que foi digitado e fica no passo 2
+        dropHold(false);
+        showDuplicate();
+        return;
+      }
       if (r.status === 409 || code === 'SLOT_TAKEN') {
         dropHold(false);
         delete cache[state.week];
@@ -641,6 +675,9 @@
       releaseOnExit: function (date, time) { this.release(date, time); },
       book: function (p) {
         return wait(1200).then(function () {
+          var dupMail = String(p.email || '').trim().toLowerCase() === 'duplicado@teste.com';
+          var dupZap = String(p.whatsapp || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '') === '11900000000';
+          if (SIMULAR === 'duplicado' || dupMail || dupZap) return { status: 409, data: { ok: false, code: 'DUPLICATE' } };
           if (SIMULAR === '409') return { status: 409, data: { ok: false, code: 'SLOT_TAKEN' } };
           if (SIMULAR === '422') return { status: 422, data: { ok: false, code: 'VALIDATION', fields: { email: 'Informe um e-mail válido.' } } };
           if (SIMULAR === '429') return { status: 429, data: { ok: false, code: 'RATE_LIMIT' } };

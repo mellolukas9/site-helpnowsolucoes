@@ -1,14 +1,16 @@
 /* HelpNow — faixa da campanha Universo TOTVS.
-   O texto da campanha é fixo no HTML. O "Restam X de N" só aparece com número REAL
+   O texto da campanha é fixo no HTML. Com CAMPAIGN_COUNTER = false (padrão) nenhuma chamada de stats é feita.
+   O "Restam X de N" só aparece (flag = true) com número REAL
    (GET /api/agenda.php?action=stats → Apps Script → planilha). Sem dado (API fora do ar,
    modo mock, demonstração) → fica só o texto, sem número. */
 (function () {
   'use strict';
 
+  var CAMPAIGN_COUNTER = false; // contador "Restam X de N" DESLIGADO (rodada 7). true = volta a chamar action=stats e a mostrar o número.
   var DEMO = false; // o build da demonstração (GitHub Pages) troca para true: não há API lá
   var boxes = document.querySelectorAll('[data-campaign]');
   var params = new URLSearchParams(location.search);
-  if (!boxes.length || DEMO || params.get('mock') === '1' || location.protocol === 'file:') return;
+  if (!CAMPAIGN_COUNTER || !boxes.length || DEMO || params.get('mock') === '1' || location.protocol === 'file:') return;
 
   var ctrl = 'AbortController' in window ? new AbortController() : null;
   var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 6000);

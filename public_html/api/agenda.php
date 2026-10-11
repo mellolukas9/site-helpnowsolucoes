@@ -140,6 +140,7 @@ function simulate_response(): void {
     if (!is_local_server() || !in_array(client_ip(), ['127.0.0.1', '::1'], true)) return;
     switch ($sim) {
         case '409': respond(409, ['ok' => false, 'code' => 'SLOT_TAKEN']);
+        case 'duplicate': respond(409, ['ok' => false, 'code' => 'DUPLICATE']);
         case '422': respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => ['email' => 'Informe um e-mail válido.', 'whatsapp' => 'Informe o WhatsApp com DDD.']]);
         case '429': respond(429, ['ok' => false, 'code' => 'RATE_LIMIT']);
         case '502': respond(502, ['ok' => false, 'code' => 'UPSTREAM']);
@@ -249,7 +250,7 @@ function mock_slots(string $from, string $to, string $ownId = ''): array {
         $date = $d->format('Y-m-d');
         $slots = [];
         $w = (int)$d->format('N');
-        if ($w <= 5 && $date >= $first) {
+        if ($w <= 5 && $date >= $first && $date <= '2026-12-20') {
             foreach (SLOT_TIMES as $i => $t) {
                 $h = $held[$date . ' ' . $t] ?? null;
                 if (((int)$d->format('j') + $i) % 4 !== 0 && (!$h || $h['id'] === $ownId)) $slots[] = $t;
@@ -329,6 +330,9 @@ if ($action === 'book' && $method === 'POST') {
     if ($errors) respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => $errors]);
 
     if ($MOCK) {
+        // simulação da duplicidade (mesmo contrato do Apps Script): e-mail duplicado@teste.com ou WhatsApp (11) 90000-0000
+        $mDigits = preg_replace('/^55(?=\d{10,11}$)/', '', $digits) ?? '';
+        if ($data['email'] === 'duplicado@teste.com' || $mDigits === '11900000000') respond(409, ['ok' => false, 'code' => 'DUPLICATE']);
         // mesma regra do Code.gs: reserva de outra pessoa → 409; reserva própria/sem reserva → agenda e libera
         $taken = mock_holds(function (array $all) use ($data) {
             $k = $data['date'] . ' ' . $data['time'];
@@ -350,6 +354,7 @@ if ($action === 'book' && $method === 'POST') {
     }
     $code = (string)($res['code'] ?? 'UPSTREAM');
     if ($code === 'SLOT_TAKEN') respond(409, ['ok' => false, 'code' => 'SLOT_TAKEN']);
+    if ($code === 'DUPLICATE') respond(409, ['ok' => false, 'code' => 'DUPLICATE']);
     if ($code === 'VALIDATION') respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => $res['fields'] ?? []]);
     log_error($LOG_FILE, 'book code: ' . $code);
     respond(502, ['ok' => false, 'code' => 'UPSTREAM']);
