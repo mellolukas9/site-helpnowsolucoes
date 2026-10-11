@@ -80,17 +80,35 @@ function rate_limit(string $bucket, int $max, int $windowSec): bool {
     return $allowed;
 }
 
-/** Aceita só chamadas do próprio site (quando o navegador informa a origem). */
+/**
+ * true só quando o PRÓPRIO servidor está rodando localmente (desenvolvimento).
+ * - `php -S` (PHP_SAPI === 'cli-server'): nunca é o que roda em produção; ou
+ * - SERVER_NAME local E cliente em loopback. (O cabeçalho Host/Origin vem do cliente e não prova nada;
+ *   o SERVER_NAME sozinho também pode refletir o Host em alguns Apache, por isso exigimos o loopback.)
+ * Em produção (Apache/FPM na HostGator) é sempre false.
+ */
+function is_local_server(): bool {
+    if (PHP_SAPI === 'cli-server') return true;
+    $name = strtolower((string)($_SERVER['SERVER_NAME'] ?? ''));
+    return in_array($name, ['localhost', '127.0.0.1', '::1', '[::1]'], true)
+        && in_array(client_ip(), ['127.0.0.1', '::1'], true);
+}
+
+/**
+ * Aceita só chamadas do próprio site: valem as ALLOWED_ORIGINS do config.
+ * Origens localhost/127.0.0.1 só são aceitas quando is_local_server() — em produção são recusadas.
+ */
 function check_origin(array $allowed, bool $strict): void {
     $origin  = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
     $referer = (string)($_SERVER['HTTP_REFERER'] ?? '');
-    $host    = (string)($_SERVER['HTTP_HOST'] ?? '');
-    $isLocal = preg_match('/^(localhost|127\.0\.0\.1)(:\d+)?$/', $host) === 1;
-    if ($isLocal) return;
     $ok = false;
     foreach ($allowed as $a) {
         if ($origin !== '' && rtrim($origin, '/') === rtrim($a, '/')) $ok = true;
         if ($origin === '' && $referer !== '' && str_starts_with($referer, rtrim($a, '/') . '/')) $ok = true;
+    }
+    if (!$ok && is_local_server()) {
+        $h = strtolower((string)parse_url($origin !== '' ? $origin : $referer, PHP_URL_HOST));
+        if (in_array($h, ['localhost', '127.0.0.1', '[::1]', '::1'], true)) $ok = true;
     }
     if (!$ok && ($strict || $origin !== '')) respond(403, ['ok' => false, 'code' => 'FORBIDDEN']);
 }
@@ -113,15 +131,13 @@ function clean(mixed $v, int $max, bool $multiline = false): string {
 
 /**
  * Simulação de respostas (?simulate=409|422|429|502) para testar o front sem o Google.
- * SÓ funciona em localhost: exige Host local E cliente em loopback. Em produção é ignorado.
+ * SÓ funciona em servidor local (is_local_server) E cliente em loopback. Em produção é ignorado.
  */
 function simulate_response(): void {
     $sim = (string)($_GET['simulate'] ?? '');
     if ($sim === '') return;
-    $host  = (string)($_SERVER['HTTP_HOST'] ?? '');
-    $local = preg_match('/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/', $host) === 1
-          && in_array(client_ip(), ['127.0.0.1', '::1'], true);
-    if (!$local) return;
+    // só em servidor local E cliente em loopback; em produção é ignorado
+    if (!is_local_server() || !in_array(client_ip(), ['127.0.0.1', '::1'], true)) return;
     switch ($sim) {
         case '409': respond(409, ['ok' => false, 'code' => 'SLOT_TAKEN']);
         case '422': respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => ['email' => 'Informe um e-mail válido.', 'whatsapp' => 'Informe o WhatsApp com DDD.']]);

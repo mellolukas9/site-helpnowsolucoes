@@ -64,7 +64,9 @@ Respostas:
 Anti-spam: honeypot `website` e `startedAt` < 4s → o PHP responde `ok:true` sem agendar.
 Rate limit (por IP, com `flock`): slots 60/10 min · book 5/hora.
 
-Só para desenvolvimento: `?simulate=409|422|429|502` no `/api/agenda.php` devolve a resposta correspondente. Funciona apenas com Host `localhost` **e** cliente em loopback; em produção é ignorado.
+Origem: em produção valem **somente** as `ALLOWED_ORIGINS` do `helpnow-config.php`. Origens `localhost`/`127.0.0.1` só são aceitas quando o próprio servidor é local (`PHP_SAPI === 'cli-server'`, ou `SERVER_NAME` local com cliente em loopback) — o cabeçalho `Host`/`Origin` enviado pelo cliente nunca habilita isso.
+
+Só para desenvolvimento: `?simulate=409|422|429|502` no `/api/agenda.php` devolve a resposta correspondente. Funciona apenas em servidor local (`is_local_server()`) **e** cliente em loopback; em produção é ignorado.
 
 Validação: `agenda.php` (`clean()`) e `Code.gs` (`sanitize_`/`validate_`) aplicam as mesmas regras. Se mudar uma, mude a outra. Textos de planilha que começam com `= + - @` ganham prefixo `'`.
 
