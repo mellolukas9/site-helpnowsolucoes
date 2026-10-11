@@ -256,6 +256,8 @@
     if (state.hold && state.step !== 3) api.releaseOnExit(state.hold.date, state.hold.time);
   });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
+  window.addEventListener('focus', tick);
+  window.addEventListener('pageshow', tick);
 
   /* ---------- Passo 1: dias e horários ---------- */
   function renderSkeleton() {
