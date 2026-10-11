@@ -42,6 +42,36 @@
     if (desktop.addEventListener) desktop.addEventListener('change', onDesktop); else desktop.addListener(onDesktop);
   }
 
+  /* ---------- Cronômetro do CTA: arco carrega 0 -> 100 % em 3 min reais (linear), segura cheio 1,5 s e reinicia ---------- */
+  var big = document.querySelector('.chrono--big');
+  if (big && 'IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var bFill = big.querySelector('.chrono__fill'), bTip = big.querySelector('.chrono__tip');
+    var CYCLE = 180000, HOLD = 1500, FADE = 400, t0 = null;
+    bFill.style.animation = 'none'; bTip.style.animation = 'none';
+    bFill.style.transition = 'none'; bTip.style.transition = 'none';
+    var paint = function (f, op) {
+      bFill.style.strokeDashoffset = String(100 * (1 - f));
+      bTip.style.transform = 'rotate(' + (f * 360) + 'deg)';
+      bFill.style.opacity = bTip.style.opacity = String(op);
+    };
+    var frame = function (now) {
+      var t = now - t0, total = CYCLE + HOLD + FADE;
+      if (t >= total) { t0 = now; t = 0; }
+      if (t < CYCLE) paint(t / CYCLE, 1);
+      else if (t < CYCLE + HOLD) paint(1, 1);
+      else paint(1, 1 - (t - CYCLE - HOLD) / FADE);
+      requestAnimationFrame(frame);
+    };
+    var started = false;
+    var bio = new IntersectionObserver(function (entries) {
+      if (started || !entries[0].isIntersecting) return;
+      started = true; bio.disconnect();
+      paint(0, 1);
+      requestAnimationFrame(function (now) { t0 = now; frame(now); });
+    });
+    bio.observe(big);
+  }
+
   /* ---------- WhatsApp flutuante: some sobre o CTA final e o rodapé ---------- */
   var wa = document.querySelector('.wa-float');
   if (wa && 'IntersectionObserver' in window) {
