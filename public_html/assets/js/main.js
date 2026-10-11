@@ -53,6 +53,51 @@
     document.querySelectorAll('.cta, .site-footer').forEach(function (el) { io.observe(el); });
   }
 
+  /* ---------- WhatsApp flutuante: nunca fica em cima de um botão, link ou aba ---------- */
+  if (wa) {
+    var INTERACTIVE = 'a, button, input, select, textarea, [role="tab"], [role="button"]';
+    var checking = false;
+    var checkCover = function () {
+      checking = false;
+      var r = wa.getBoundingClientRect();
+      if (!r.width) return;
+      var xs = [r.left + 3, r.left + r.width / 2, r.right - 3], ys = [r.top + 3, r.top + r.height / 2, r.bottom - 3];
+      var covering = false;
+      for (var i = 0; i < xs.length && !covering; i++) {
+        for (var j = 0; j < ys.length && !covering; j++) {
+          var stack = document.elementsFromPoint(xs[i], ys[j]);
+          for (var k = 0; k < stack.length; k++) {
+            var e = stack[k];
+            if (e === wa || wa.contains(e)) continue;     // o próprio botão
+            if (e.closest('.site-header, .nav')) break;   // header por cima: não conta
+            if (e.matches(INTERACTIVE) || e.closest(INTERACTIVE)) { covering = true; }
+            break;                                         // só o elemento do topo da pilha importa
+          }
+        }
+      }
+      wa.classList.toggle('is-covering', covering);
+    };
+    var scheduleCheck = function () { if (!checking) { checking = true; window.requestAnimationFrame(checkCover); } };
+    window.addEventListener('scroll', scheduleCheck, { passive: true });
+    window.addEventListener('resize', scheduleCheck);
+    // o carrossel do "Na prática" rola na horizontal e muda o que está sob o botão
+    document.addEventListener('scroll', scheduleCheck, { passive: true, capture: true });
+    scheduleCheck();
+  }
+
+  /* ---------- WhatsApp flutuante: sai de cena enquanto se rola para baixo ---------- */
+  if (wa) {
+    var lastY = window.scrollY, idle = null;
+    window.addEventListener('scroll', function () {
+      var y = window.scrollY, dy = y - lastY;
+      if (Math.abs(dy) < 6) return;
+      lastY = y;
+      wa.classList.toggle('is-away', dy > 0 && y > 160); // descendo: some; subindo: volta
+      clearTimeout(idle);
+      idle = setTimeout(function () { wa.classList.remove('is-away'); }, 700); // parou de rolar: volta
+    }, { passive: true });
+  }
+
   /* ---------- Tablists acessíveis (setas do teclado) ---------- */
   function wireTablist(tabs, onSelect) {
     tabs.forEach(function (tab, i) {
@@ -75,6 +120,29 @@
       if (focus) tabs[i].focus();
       onSelect(i, tabs[i], focus);
     }
+  }
+
+  /* ---------- "Na prática": pontos + fade do carrossel (só aparecem no mobile, via CSS) ---------- */
+  var flow = document.querySelector('.flow');
+  var dotsBox = document.querySelector('.flow-dots');
+  if (flow && dotsBox) {
+    var cards = flow.querySelectorAll('.fcard');
+    Array.prototype.forEach.call(cards, function () { dotsBox.appendChild(document.createElement('i')); });
+    var dots = dotsBox.children;
+    var syncFlow = function () {
+      var max = flow.scrollWidth - flow.clientWidth;
+      flow.classList.toggle('is-end', flow.scrollLeft >= max - 4);
+      var idx = 0, best = Infinity, left = flow.getBoundingClientRect().left;
+      Array.prototype.forEach.call(cards, function (c, i) {
+        var d = Math.abs(c.getBoundingClientRect().left - left - 18);
+        if (d < best) { best = d; idx = i; }
+      });
+      if (flow.scrollLeft >= max - 4) idx = cards.length - 1;
+      Array.prototype.forEach.call(dots, function (d, i) { d.classList.toggle('is-active', i === idx); });
+    };
+    flow.addEventListener('scroll', function () { window.requestAnimationFrame(syncFlow); }, { passive: true });
+    window.addEventListener('resize', syncFlow);
+    syncFlow();
   }
 
   /* ---------- "Na prática": Como é hoje × Com a HelpNow ---------- */

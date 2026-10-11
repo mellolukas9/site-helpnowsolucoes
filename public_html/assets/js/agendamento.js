@@ -4,6 +4,8 @@
    Contrato da API: docs/03-agendamento.md
    As regras de agenda valem de verdade no Apps Script; aqui elas só orientam a interface.
    Modo demonstração (sem backend): abra /agendamento?mock=1
+     - ?holdttl=15            reserva de 15 s (testar a expiração) — só em localhost
+     - ?simular=409|422|429|502|hold502|holdrede   força a resposta do mock
    ========================================================================== */
 (function () {
   'use strict';
@@ -14,11 +16,15 @@
     HORIZON_DAYS: 30,              // até quantos dias à frente mostrar
     TIMEZONE: 'America/Sao_Paulo',
     TIMEOUT_MS: 15000,
+    HOLD_SECONDS: 300,             // valor padrão; quem manda é o ttl devolvido pela API
     WHATSAPP: 'https://wa.me/5521968441647'
   };
 
   var params = new URLSearchParams(location.search);
   var MOCK = params.get('mock') === '1' || location.protocol === 'file:';
+  var IS_LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  var DEV_TTL = IS_LOCAL || MOCK ? Math.max(0, Math.min(300, parseInt(params.get('holdttl'), 10) || 0)) : 0;
+  var SIMULAR = IS_LOCAL || MOCK ? (params.get('simular') || '') : '';
 
   /* ---------- Datas (strings YYYY-MM-DD, sem depender do fuso do navegador) ---------- */
   function todaySP() {
@@ -48,8 +54,26 @@
   var MAX_WEEK = mondayOf(LAST);
 
   /* ---------- Estado ---------- */
-  var state = { step: 1, week: MIN_WEEK, days: {}, date: null, time: null, startedAt: 0, reqId: 0 };
+  var state = {
+    step: 1, week: MIN_WEEK, days: {}, date: null, time: null, startedAt: 0, reqId: 0,
+    holdId: newId(),          // identifica ESTE navegador nas reservas
+    hold: null,               // reserva ativa: { date, time, total, expiresAt, warned, announced }
+    holdReq: 0,               // invalida respostas de reservas antigas
+    holdChain: Promise.resolve(),
+    holdPromise: null,
+    timer: null,
+    booking: null             // dados do agendamento confirmado (start/end/meet)
+  };
   var cache = {}; // week -> { at, days }
+  var submitting = false;
+  var advancing = false;
+
+  function newId() {
+    var a = new Uint8Array(18);
+    try { (window.crypto || window.msCrypto).getRandomValues(a); }
+    catch (e) { for (var i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); }
+    return Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+  }
 
   /* ---------- DOM ---------- */
   var $ = function (id) { return document.getElementById(id); };
@@ -58,7 +82,8 @@
     days: $('days'), slotsTitle: $('slots-title'), slots: $('slots'), selection: $('selection-text'),
     toStep2: $('to-step-2'), summary: $('summary-text'), form: $('ag-form'), submit: $('submit-btn'),
     confirmTitle: $('confirm-title'), confirmWhen: $('confirm-when'), confirmEmail: $('confirm-email'),
-    gcal: $('gcal-link'), ics: $('ics-btn')
+    calGoogle: $('cal-google'), calOutlook: $('cal-outlook'), calLive: $('cal-live'), ics: $('ics-btn'),
+    holdBar: $('hold-bar'), holdTime: $('hold-time'), holdFill: $('hold-fill'), holdLive: $('hold-live')
   };
 
   /* ---------- Alertas ---------- */
@@ -79,18 +104,127 @@
       return res.json().catch(function () { return {}; }).then(function (data) { return { status: res.status, data: data }; });
     }, function (err) { clearTimeout(t); throw err; });
   }
+  function holdBody(date, time) { return JSON.stringify({ date: date, time: time, holdId: state.holdId }); }
 
   var api = MOCK ? mockApi() : {
     slots: function (from, to) {
-      return request(CONFIG.API + '?action=slots&from=' + from + '&to=' + to).then(function (r) {
+      return request(CONFIG.API + '?action=slots&from=' + from + '&to=' + to + '&holdId=' + state.holdId).then(function (r) {
         if (r.status !== 200 || !r.data || !Array.isArray(r.data.days)) throw new Error('slots ' + r.status);
         return r.data.days;
       });
     },
     book: function (payload) {
       return request(CONFIG.API + '?action=book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    },
+    hold: function (date, time) {
+      return request(CONFIG.API + '?action=hold' + (DEV_TTL ? '&ttl=' + DEV_TTL : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: holdBody(date, time) });
+    },
+    release: function (date, time) {
+      try { fetch(CONFIG.API + '?action=release', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: holdBody(date, time), keepalive: true }).catch(function () {}); } catch (e) { /* sem rede: a reserva expira sozinha */ }
+    },
+    releaseOnExit: function (date, time) {
+      if (navigator.sendBeacon) navigator.sendBeacon(CONFIG.API + '?action=release', new Blob([holdBody(date, time)], { type: 'text/plain;charset=UTF-8' }));
     }
   };
+
+  /* ---------- Reserva temporária (hold) ---------- */
+  function holdOk(r) { return r && r.status === 200 && r.data && r.data.ok === true; }
+  function fmtClock(sec) { var m = Math.floor(sec / 60), s = sec % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
+  function announce(msg) { if (!el.holdLive) return; el.holdLive.textContent = ''; setTimeout(function () { el.holdLive.textContent = msg; }, 60); }
+
+  function startTimer() { stopTimer(); state.timer = setInterval(tick, 250); tick(); }
+  function stopTimer() { if (state.timer) { clearInterval(state.timer); state.timer = null; } }
+
+  function tick() {
+    if (!state.hold) { stopTimer(); return; }
+    var left = state.hold.expiresAt - Date.now();
+    if (left <= 0) { if (!submitting) onHoldExpired(); return; }
+    renderHold(left);
+  }
+
+  function renderHold(left) {
+    var h = state.hold;
+    if (!h || state.step !== 2) return;
+    var sec = Math.ceil(left / 1000);
+    el.holdTime.textContent = fmtClock(sec);
+    el.holdFill.style.transform = 'scaleX(' + Math.max(0, Math.min(1, left / h.total)) + ')';
+    el.holdBar.classList.toggle('is-low', sec <= 60);
+    if (sec <= 60 && !h.warned && h.total > 60000) { h.warned = true; announce('Falta 1 minuto para o fim da reserva do horário.'); }
+  }
+
+  function showHoldUI() {
+    var h = state.hold;
+    if (!h) { el.holdBar.hidden = true; return; }
+    el.holdBar.hidden = false;
+    renderHold(Math.max(0, h.expiresAt - Date.now()));
+    if (!h.announced) {
+      h.announced = true;
+      var mins = Math.round(h.total / 60000);
+      announce('Horário reservado para você por ' + (h.total >= 60000 ? mins + (mins === 1 ? ' minuto.' : ' minutos.') : Math.round(h.total / 1000) + ' segundos.'));
+    }
+  }
+  function hideHoldUI() { el.holdBar.hidden = true; }
+
+  /** Descarta a reserva local; com release=true avisa o servidor (troca de horário/dia). */
+  function dropHold(release) {
+    state.holdReq++; // qualquer reserva em andamento passa a ser "antiga"
+    var h = state.hold;
+    stopTimer(); hideHoldUI(); state.hold = null;
+    if (h && release) api.release(h.date, h.time);
+  }
+
+  function onHoldExpired() {
+    stopTimer(); state.hold = null; state.time = null; hideHoldUI();
+    delete cache[state.week];
+    if (state.step !== 1) goStep(1);
+    updateSelection();
+    showAlert('warn', '<strong>O tempo de reserva acabou.</strong> Escolha o horário novamente.');
+    loadWeek(state.week, { force: true });
+  }
+
+  function onHoldTaken(date, time) {
+    if (state.date === date && state.time === time) state.time = null;
+    delete cache[state.week];
+    updateSelection();
+    showAlert('warn', '<strong>Esse horário acabou de ser reservado por outra pessoa.</strong> Escolha outro, por favor.');
+    loadWeek(state.week, { force: true });
+  }
+
+  /** Pede a reserva do horário. Falha de rede/servidor → segue SEM timer e sem texto de reserva. */
+  function requestHold(date, time) {
+    if (state.hold && state.hold.date === date && state.hold.time === time) return state.holdPromise;
+    var prev = state.hold;
+    if (prev) { stopTimer(); hideHoldUI(); state.hold = null; api.release(prev.date, prev.time); }
+    var token = ++state.holdReq;
+    var p = state.holdChain = state.holdChain.then(function () {
+      if (token !== state.holdReq) return 'stale';
+      return api.hold(date, time).then(function (r) {
+        if (token !== state.holdReq) { if (holdOk(r)) api.release(date, time); return 'stale'; }
+        if (holdOk(r)) {
+          var ttl = Number(r.data.ttl) > 0 ? Number(r.data.ttl) : CONFIG.HOLD_SECONDS;
+          state.hold = { date: date, time: time, total: ttl * 1000, expiresAt: Date.now() + ttl * 1000, warned: false, announced: false };
+          startTimer();
+          if (state.step === 2) showHoldUI();
+          return 'ok';
+        }
+        if (r.status === 409 || (r.data && r.data.code === 'SLOT_TAKEN')) { onHoldTaken(date, time); return 'taken'; }
+        return 'none';
+      }, function () { return token === state.holdReq ? 'none' : 'stale'; });
+    });
+    state.holdPromise = p;
+    return p;
+  }
+
+  /** Espera a reserva MAIS RECENTE terminar (o usuário pode ter trocado de horário no meio). */
+  function settleHold() {
+    var p = state.holdPromise;
+    return Promise.resolve(p).then(function (r) { return state.holdPromise === p ? r : settleHold(); });
+  }
+
+  window.addEventListener('pagehide', function () {
+    if (state.hold && state.step !== 3) api.releaseOnExit(state.hold.date, state.hold.time);
+  });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
 
   /* ---------- Passo 1: dias e horários ---------- */
   function renderSkeleton() {
@@ -156,6 +290,7 @@
     var keep = state.date && (map[state.date] || []).length ? state.date : firstWithSlots;
     if (keep) { selectDay(keep); }
     else {
+      if (state.hold || state.time) dropHold(true);
       state.date = null; state.time = null; updateSelection();
       el.slotsTitle.textContent = '';
       el.slots.innerHTML = '<p class="ag-empty" style="grid-column:1/-1">Nenhum horário livre nesta semana. Veja a próxima semana ou ' + waLink() + '.</p>';
@@ -165,7 +300,7 @@
   function onPickDay(e) { selectDay(e.currentTarget.dataset.date); }
 
   function selectDay(date) {
-    if (state.date !== date) state.time = null;
+    if (state.date !== date) { state.time = null; dropHold(true); }
     state.date = date;
     Array.prototype.forEach.call(el.days.children, function (b) { b.setAttribute('aria-pressed', String(b.dataset && b.dataset.date === date)); });
     var slots = state.days[date] || [];
@@ -186,16 +321,17 @@
 
   function selectTime(t) {
     state.time = t;
-    Array.prototype.forEach.call(el.slots.children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.time === t)); });
     updateSelection();
+    requestHold(state.date, t);
   }
 
   function selectionText() { return longLabelPretty(state.date) + ' · ' + slotLabel(state.time) + ' (Brasília)'; }
 
   function updateSelection() {
     var ok = !!(state.date && state.time);
-    el.toStep2.disabled = !ok;
+    el.toStep2.disabled = !ok || advancing;
     el.selection.innerHTML = ok ? '<strong>' + selectionText() + '</strong>' : 'Selecione um horário para continuar.';
+    Array.prototype.forEach.call(el.slots.children, function (b) { if (b.dataset && b.dataset.time) b.setAttribute('aria-pressed', String(!!state.time && b.dataset.time === state.time)); });
   }
 
   el.prev.addEventListener('click', function () { if (state.week > MIN_WEEK) { clearAlert(); loadWeek(addDays(state.week, -7)); } });
@@ -212,17 +348,23 @@
       li.querySelector('.stepper__dot').textContent = i < n ? '✓' : String(i);
       if (i === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
     });
+    if (n === 2) showHoldUI(); else hideHoldUI();
     var card = document.querySelector('.booking');
     if (card && card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   el.toStep2.addEventListener('click', function () {
-    if (!state.date || !state.time) return;
+    if (!state.date || !state.time || advancing) return;
     clearAlert();
-    el.summary.textContent = selectionText();
-    if (!state.startedAt) state.startedAt = Date.now();
-    goStep(2);
-    $('f-nome').focus({ preventScroll: true });
+    advancing = true; el.toStep2.disabled = true;
+    settleHold().then(function (res) {
+      advancing = false; updateSelection();
+      if (res === 'taken' || !state.time) return;       // alguém levou o horário: onHoldTaken já avisou
+      el.summary.textContent = selectionText();
+      if (!state.startedAt) state.startedAt = Date.now();
+      goStep(2);
+      $('f-nome').focus({ preventScroll: true });
+    });
   });
   $('back-to-1').addEventListener('click', function () { clearAlert(); goStep(1); });
   $('back-to-1b').addEventListener('click', function () { clearAlert(); goStep(1); });
@@ -283,7 +425,6 @@
     };
   }
 
-  var submitting = false;
   el.form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (submitting) return;
@@ -297,7 +438,8 @@
     var payload = Object.assign({}, v, {
       date: state.date, time: state.time,
       origem: origem || '', assunto: assunto, momento: momento,
-      startedAt: state.startedAt
+      startedAt: state.startedAt,
+      holdId: state.holdId
     });
 
     submitting = true;
@@ -308,6 +450,7 @@
       if (r.status === 200 && r.data && r.data.ok) return showConfirmation(v, r.data);
       var code = r.data && r.data.code;
       if (r.status === 409 || code === 'SLOT_TAKEN') {
+        dropHold(false);
         delete cache[state.week];
         state.time = null;
         goStep(1);
@@ -330,35 +473,73 @@
     });
   });
 
-  /* ---------- Passo 3: confirmação ---------- */
-  function utcStamp(date, time, plusHours) {
-    // Brasília = UTC-3 o ano todo (sem horário de verão desde 2019)
-    var p = date.split('-').map(Number); var h = parseInt(time.slice(0, 2), 10) + 3 + (plusHours || 0);
-    return new Date(Date.UTC(p[0], p[1] - 1, p[2], h, 0, 0)).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  /* ---------- Passo 3: confirmação + "Adicionar à minha agenda" ---------- */
+  var CAL_TITLE = 'Diagnóstico HelpNow';
+  function calDescription(meet) { return 'Reunião de diagnóstico de 60 min com a HelpNow.' + (meet ? ' Link: ' + meet : ''); }
+  function stampUTC(d) { return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
+  function isoUTC(d) { return d.toISOString().replace(/\.\d{3}Z$/, 'Z'); }
+  var enc = encodeURIComponent;
+
+  /** Início/fim SEMPRE do ISO (UTC) devolvido pela API; só sem ele cai no horário escolhido (Brasília = UTC-3). */
+  function calTimes(data) {
+    var s = data && data.start && !isNaN(Date.parse(data.start)) ? new Date(data.start) : null;
+    var e = data && data.end && !isNaN(Date.parse(data.end)) ? new Date(data.end) : null;
+    if (!s) {
+      var p = state.date.split('-').map(Number);
+      s = new Date(Date.UTC(p[0], p[1] - 1, p[2], parseInt(state.time.slice(0, 2), 10) + 3, 0, 0));
+    }
+    if (!e || e <= s) e = new Date(s.getTime() + 3600000);
+    return { s: s, e: e };
+  }
+
+  function googleUrl(t, meet) {
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + enc(CAL_TITLE) +
+      '&dates=' + stampUTC(t.s) + '/' + stampUTC(t.e) + '&details=' + enc(calDescription(meet)) + (meet ? '&location=' + enc(meet) : '');
+  }
+  function outlookUrl(host, t, meet) {
+    return 'https://' + host + '/calendar/0/deeplink/compose?subject=' + enc(CAL_TITLE) +
+      '&startdt=' + enc(isoUTC(t.s)) + '&enddt=' + enc(isoUTC(t.e)) + '&body=' + enc(calDescription(meet)) +
+      (meet ? '&location=' + enc(meet) : '') + '&path=/calendar/action/compose&rru=addevent';
+  }
+
+  function icsText(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  function icsFold(line) { // linhas de até 75 octetos (RFC 5545)
+    var out = '', n = 0;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line.charAt(i), b = unescape(encodeURIComponent(ch)).length;
+      if (n + b > 74) { out += '\r\n '; n = 1; }
+      out += ch; n += b;
+    }
+    return out;
+  }
+  function buildICS(t, meet, uid) {
+    var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HelpNow//Agendamento//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+      'UID:' + uid + '@helpnowsolucoes.com.br', 'DTSTAMP:' + stampUTC(new Date()), 'DTSTART:' + stampUTC(t.s), 'DTEND:' + stampUTC(t.e),
+      'SUMMARY:' + icsText(CAL_TITLE), 'DESCRIPTION:' + icsText(calDescription(meet))];
+    if (meet) { lines.push('URL:' + meet); lines.push('LOCATION:' + icsText(meet)); }
+    lines.push('END:VEVENT', 'END:VCALENDAR');
+    return lines.map(icsFold).join('\r\n') + '\r\n';
   }
 
   function showConfirmation(v, data) {
+    dropHold(false); // o servidor já removeu a reserva ao agendar
     var first = v.nome.split(/\s+/)[0];
     el.confirmTitle.textContent = 'Reunião confirmada, ' + first + '!';
     el.confirmWhen.textContent = selectionText();
     el.confirmEmail.textContent = 'Enviamos o convite com o link do Google Meet para ' + v.email + '.';
 
-    var title = 'Diagnóstico HelpNow — 60 min';
-    var details = 'Reunião de diagnóstico com um especialista HelpNow.' + (data.meetLink ? '\nGoogle Meet: ' + data.meetLink : '') + '\nDúvidas: WhatsApp (21) 96844-1647';
-    var start = utcStamp(state.date, state.time, 0), end = utcStamp(state.date, state.time, 1);
-    el.gcal.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(title) +
-      '&dates=' + start + '/' + end + '&details=' + encodeURIComponent(details) + (data.meetLink ? '&location=' + encodeURIComponent(data.meetLink) : '');
-
+    var t = calTimes(data), meet = (data && data.meetLink) || '';
+    var uid = (data && data.eventId) || (Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+    el.calGoogle.href = googleUrl(t, meet);
+    el.calOutlook.href = outlookUrl('outlook.office.com', t, meet);
+    el.calLive.href = outlookUrl('outlook.live.com', t, meet);
     el.ics.onclick = function () {
-      var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HelpNow//Agendamento//PT', 'BEGIN:VEVENT',
-        'UID:' + (data.eventId || Date.now()) + '@helpnowsolucoes.com.br', 'DTSTAMP:' + utcStamp(TODAY, '00:00', 0),
-        'DTSTART:' + start, 'DTEND:' + end, 'SUMMARY:' + title, 'DESCRIPTION:' + details.replace(/\n/g, '\\n'),
-        data.meetLink ? 'LOCATION:' + data.meetLink : '', 'END:VEVENT', 'END:VCALENDAR'].filter(Boolean).join('\r\n');
-      var url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+      var url = URL.createObjectURL(new Blob([buildICS(t, meet, uid)], { type: 'text/calendar;charset=utf-8' }));
       var a = document.createElement('a'); a.href = url; a.download = 'diagnostico-helpnow.ics';
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
     };
+    state.booking = { start: t.s.toISOString(), end: t.e.toISOString(), meet: meet };
 
     goStep(3);
     $('step-3').focus({ preventScroll: true });
@@ -370,29 +551,74 @@
   function mockApi() {
     var HOURS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
     var HOLIDAYS = ['2026-11-02', '2026-11-15', '2026-11-20', '2026-12-25'];
+    var LS_KEY = 'helpnow-mock-holds';       // compartilhado entre abas do mesmo navegador → "duas abas disputando"
     var booked = {};
+    var mem = {};                            // reserva em memória se o localStorage estiver bloqueado
     var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+    function readHolds() {
+      var o;
+      try { o = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch (e) { o = mem; }
+      var now = Date.now();
+      Object.keys(o).forEach(function (k) { if (!o[k] || o[k].exp <= now) delete o[k]; });
+      return o;
+    }
+    function writeHolds(o) { mem = o; try { localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch (e) { /* ok: usa memória */ } }
+    function iso(date, time) {
+      var p = date.split('-').map(Number), h = parseInt(time.slice(0, 2), 10);
+      var s = new Date(Date.UTC(p[0], p[1] - 1, p[2], h + 3, 0, 0));
+      return { start: s.toISOString(), end: new Date(s.getTime() + 3600000).toISOString() };
+    }
+
     return {
       slots: function (from, to) {
         return wait(700).then(function () {
-          var out = [];
+          var holds = readHolds(), out = [];
           for (var d = from; d <= to; d = addDays(d, 1)) {
             var w = dow(d);
             var slots = [];
             if (w >= 1 && w <= 5 && d >= FIRST && d <= LAST && HOLIDAYS.indexOf(d) < 0) {
               var day = toUTC(d).getUTCDate();
-              slots = HOURS.filter(function (h, i) { return (day + i) % 4 !== 0 && !booked[d + h]; });
+              slots = HOURS.filter(function (h, i) {
+                var hold = holds[d + ' ' + h];
+                return (day + i) % 4 !== 0 && !booked[d + h] && (!hold || hold.id === state.holdId);
+              });
             }
             out.push({ date: d, slots: slots });
           }
           return out;
         });
       },
+      hold: function (date, time) {
+        return wait(250).then(function () {
+          if (SIMULAR === 'holdrede') throw new Error('rede');
+          if (SIMULAR === 'hold502') return { status: 502, data: { ok: false, code: 'UPSTREAM' } };
+          var holds = readHolds(), k = date + ' ' + time;
+          if (holds[k] && holds[k].id !== state.holdId) return { status: 409, data: { ok: false, code: 'SLOT_TAKEN' } };
+          Object.keys(holds).forEach(function (key) { if (holds[key].id === state.holdId) delete holds[key]; }); // um horário por pessoa
+          var ttl = DEV_TTL || CONFIG.HOLD_SECONDS;
+          holds[k] = { id: state.holdId, exp: Date.now() + ttl * 1000 };
+          writeHolds(holds);
+          return { status: 200, data: { ok: true, ttl: ttl } };
+        });
+      },
+      release: function (date, time) {
+        var holds = readHolds(), k = date + ' ' + time;
+        if (holds[k] && holds[k].id === state.holdId) { delete holds[k]; writeHolds(holds); }
+      },
+      releaseOnExit: function (date, time) { this.release(date, time); },
       book: function (p) {
         return wait(1200).then(function () {
-          if (Math.random() < 0.1) return { status: 409, data: { ok: false, code: 'SLOT_TAKEN' } };
+          if (SIMULAR === '409') return { status: 409, data: { ok: false, code: 'SLOT_TAKEN' } };
+          if (SIMULAR === '422') return { status: 422, data: { ok: false, code: 'VALIDATION', fields: { email: 'Informe um e-mail válido.' } } };
+          if (SIMULAR === '429') return { status: 429, data: { ok: false, code: 'RATE_LIMIT' } };
+          if (SIMULAR === '502') return { status: 502, data: { ok: false, code: 'UPSTREAM' } };
+          var holds = readHolds(), k = p.date + ' ' + p.time;
+          if (holds[k] && holds[k].id !== p.holdId) return { status: 409, data: { ok: false, code: 'SLOT_TAKEN' } };
+          delete holds[k]; writeHolds(holds);
           booked[p.date + p.time] = true;
-          return { status: 200, data: { ok: true, eventId: 'mock-' + Date.now(), meetLink: 'https://meet.google.com/abc-defg-hij' } };
+          var t = iso(p.date, p.time);
+          return { status: 200, data: { ok: true, eventId: 'mock-' + Date.now(), start: t.start, end: t.end, meetLink: 'https://meet.google.com/abc-defg-hij' } };
         });
       }
     };

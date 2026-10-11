@@ -146,6 +146,24 @@ function simulate_response(): void {
     }
 }
 
+/** holdId gerado no navegador (16–64 caracteres). Inválido vira ''. */
+function hold_id(mixed $v): string {
+    return is_string($v) && preg_match('/^[A-Za-z0-9_-]{16,64}$/', $v) === 1 ? $v : '';
+}
+
+/** Corpo JSON pequeno (hold/release podem chegar via sendBeacon como text/plain). */
+function read_json_body(): array {
+    $in = json_decode((string)file_get_contents('php://input', false, null, 0, 4000), true);
+    return is_array($in) ? $in : [];
+}
+
+/** Início/fim em UTC (ISO 8601) de um horário de Brasília (UTC-3 fixo). */
+function slot_iso(string $date, string $time): array {
+    $start = new DateTimeImmutable($date . ' ' . $time . ':00', new DateTimeZone('-03:00'));
+    $utc = new DateTimeZone('UTC');
+    return [$start->setTimezone($utc)->format('Y-m-d\TH:i:s.000\Z'), $start->modify('+1 hour')->setTimezone($utc)->format('Y-m-d\TH:i:s.000\Z')];
+}
+
 /** Chama o Apps Script. O /exec responde 302 → googleusercontent; o cURL segue como GET (correto). */
 function call_script(string $url, string $method, array $data): array {
     $ch = curl_init();
@@ -177,7 +195,52 @@ function call_script(string $url, string $method, array $data): array {
 }
 
 /* ---------- MOCK (sem Apps Script configurado) ---------- */
-function mock_slots(string $from, string $to): array {
+
+/** Reservas simuladas em arquivo temporário (compartilhadas entre abas/clientes), com flock. */
+function mock_holds(callable $fn): mixed {
+    $file = sys_get_temp_dir() . '/helpnow_mock_holds.json';
+    $fh = @fopen($file, 'c+');
+    if ($fh === false) { $r = $fn([]); return is_array($r) && array_key_exists('__ret', $r) ? $r['__ret'] : $r; }
+    flock($fh, LOCK_EX);
+    $all = json_decode((string)stream_get_contents($fh), true);
+    $all = is_array($all) ? $all : [];
+    $now = time();
+    foreach ($all as $k => $h) { if (!is_array($h) || ($h['exp'] ?? 0) <= $now) unset($all[$k]); }
+    $result = $fn($all);
+    $new = is_array($result) && array_key_exists('__store', $result) ? $result['__store'] : $all;
+    ftruncate($fh, 0); rewind($fh); fwrite($fh, json_encode($new)); fflush($fh);
+    flock($fh, LOCK_UN); fclose($fh);
+    return is_array($result) && array_key_exists('__ret', $result) ? $result['__ret'] : $result;
+}
+
+/** TTL do mock: 300s; em servidor local aceita ?ttl=3..300 (teste de expiração). */
+function mock_ttl(): int {
+    $ttl = 300;
+    if (is_local_server() && isset($_GET['ttl'])) $ttl = max(3, min(300, (int)$_GET['ttl']));
+    return $ttl;
+}
+
+function mock_hold(string $date, string $time, string $id): array {
+    $ttl = mock_ttl();
+    return mock_holds(function (array $all) use ($date, $time, $id, $ttl) {
+        $k = $date . ' ' . $time;
+        if (isset($all[$k]) && $all[$k]['id'] !== $id) return ['__store' => $all, '__ret' => ['ok' => false, 'code' => 'SLOT_TAKEN']];
+        foreach ($all as $key => $h) { if ($h['id'] === $id) unset($all[$key]); } // uma pessoa segura um horário só
+        $all[$k] = ['id' => $id, 'exp' => time() + $ttl];
+        return ['__store' => $all, '__ret' => ['ok' => true, 'ttl' => $ttl, 'mock' => true]];
+    });
+}
+
+function mock_release(string $date, string $time, string $id): void {
+    mock_holds(function (array $all) use ($date, $time, $id) {
+        $k = $date . ' ' . $time;
+        if (isset($all[$k]) && $all[$k]['id'] === $id) unset($all[$k]);
+        return ['__store' => $all, '__ret' => true];
+    });
+}
+
+function mock_slots(string $from, string $to, string $ownId = ''): array {
+    $held = mock_holds(fn(array $all) => ['__store' => $all, '__ret' => $all]);
     $tz = new DateTimeZone('America/Sao_Paulo');
     $now = new DateTimeImmutable('now', $tz);
     $first = max($now->format('Y-m-d'), '2026-10-15');
@@ -188,7 +251,8 @@ function mock_slots(string $from, string $to): array {
         $w = (int)$d->format('N');
         if ($w <= 5 && $date >= $first) {
             foreach (SLOT_TIMES as $i => $t) {
-                if (((int)$d->format('j') + $i) % 4 !== 0) $slots[] = $t;
+                $h = $held[$date . ' ' . $t] ?? null;
+                if (((int)$d->format('j') + $i) % 4 !== 0 && (!$h || $h['id'] === $ownId)) $slots[] = $t;
             }
         }
         $days[] = ['date' => $date, 'slots' => $slots];
@@ -210,9 +274,10 @@ if ($action === 'slots' && $method === 'GET') {
     if (!valid_date($from) || !valid_date($to) || $to < $from) respond(422, ['ok' => false, 'code' => 'VALIDATION']);
     if ((strtotime($to) - strtotime($from)) / 86400 > 31) respond(422, ['ok' => false, 'code' => 'VALIDATION']);
 
-    if ($MOCK) respond(200, mock_slots($from, $to));
+    $ownId = hold_id($_GET['holdId'] ?? '');
+    if ($MOCK) respond(200, mock_slots($from, $to, $ownId));
 
-    $res = call_script($SCRIPT, 'GET', ['action' => 'slots', 'from' => $from, 'to' => $to, 'secret' => $SECRET]);
+    $res = call_script($SCRIPT, 'GET', ['action' => 'slots', 'from' => $from, 'to' => $to, 'secret' => $SECRET] + ($ownId !== '' ? ['holdId' => $ownId] : []));
     if (isset($res['__error'])) { log_error($LOG_FILE, 'slots: ' . $res['__error']); respond(502, ['ok' => false, 'code' => 'UPSTREAM']); }
     if (empty($res['ok'])) { log_error($LOG_FILE, 'slots code: ' . ($res['code'] ?? '?')); respond(502, ['ok' => false, 'code' => 'UPSTREAM']); }
     respond(200, ['timezone' => $res['timezone'] ?? 'America/Sao_Paulo', 'days' => $res['days'] ?? []]);
@@ -247,6 +312,7 @@ if ($action === 'book' && $method === 'POST') {
         'origem'   => clean($in['origem'] ?? '', 40),
         'assunto'  => clean($in['assunto'] ?? '', 40),
         'momento'  => clean($in['momento'] ?? '', 4),
+        'holdId'   => hold_id($in['holdId'] ?? ''),
     ];
 
     $errors = [];
@@ -262,7 +328,18 @@ if ($action === 'book' && $method === 'POST') {
     if (($in['consent'] ?? false) !== true) $errors['consent'] = 'Consentimento obrigatório.';
     if ($errors) respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => $errors]);
 
-    if ($MOCK) respond(200, ['ok' => true, 'eventId' => 'mock-' . time(), 'meetLink' => 'https://meet.google.com/abc-defg-hij', 'mock' => true]);
+    if ($MOCK) {
+        // mesma regra do Code.gs: reserva de outra pessoa → 409; reserva própria/sem reserva → agenda e libera
+        $taken = mock_holds(function (array $all) use ($data) {
+            $k = $data['date'] . ' ' . $data['time'];
+            if (isset($all[$k]) && $all[$k]['id'] !== $data['holdId']) return ['__store' => $all, '__ret' => true];
+            unset($all[$k]);
+            return ['__store' => $all, '__ret' => false];
+        });
+        if ($taken) respond(409, ['ok' => false, 'code' => 'SLOT_TAKEN']);
+        [$mStart, $mEnd] = slot_iso($data['date'], $data['time']);
+        respond(200, ['ok' => true, 'eventId' => 'mock-' . time(), 'start' => $mStart, 'end' => $mEnd, 'meetLink' => 'https://meet.google.com/abc-defg-hij', 'mock' => true]);
+    }
 
     $res = call_script($SCRIPT, 'POST', ['action' => 'book', 'secret' => $SECRET] + $data);
     if (isset($res['__error'])) { log_error($LOG_FILE, 'book: ' . $res['__error']); respond(502, ['ok' => false, 'code' => 'UPSTREAM']); }
@@ -275,6 +352,49 @@ if ($action === 'book' && $method === 'POST') {
     if ($code === 'SLOT_TAKEN') respond(409, ['ok' => false, 'code' => 'SLOT_TAKEN']);
     if ($code === 'VALIDATION') respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => $res['fields'] ?? []]);
     log_error($LOG_FILE, 'book code: ' . $code);
+    respond(502, ['ok' => false, 'code' => 'UPSTREAM']);
+}
+
+if ($action === 'stats' && $method === 'GET') {
+    simulate_response();
+    check_origin($ORIGINS, false);
+    if (!rate_limit('stats', 60, 600)) respond(429, ['ok' => false, 'code' => 'RATE_LIMIT']);
+    if ($MOCK) respond(200, ['ok' => true, 'mock' => true]); // sem número no mock: o front mostra só o texto da campanha
+
+    $res = call_script($SCRIPT, 'GET', ['action' => 'stats', 'secret' => $SECRET]);
+    if (isset($res['__error'])) { log_error($LOG_FILE, 'stats: ' . $res['__error']); respond(502, ['ok' => false, 'code' => 'UPSTREAM']); }
+    if (empty($res['ok']) || !isset($res['used'], $res['cap'])) { log_error($LOG_FILE, 'stats code: ' . ($res['code'] ?? '?')); respond(502, ['ok' => false, 'code' => 'UPSTREAM']); }
+    respond(200, ['ok' => true, 'used' => max(0, (int)$res['used']), 'cap' => max(1, (int)$res['cap'])]);
+}
+
+if (($action === 'hold' || $action === 'release') && $method === 'POST') {
+    simulate_response();
+    check_origin($ORIGINS, true);
+    if (!rate_limit($action, $action === 'hold' ? 40 : 80, 600)) respond(429, ['ok' => false, 'code' => 'RATE_LIMIT']);
+
+    $in   = read_json_body();
+    $date = clean($in['date'] ?? '', 10);
+    $time = clean($in['time'] ?? '', 5);
+    $id   = hold_id($in['holdId'] ?? '');
+    $errors = [];
+    if (!valid_date($date)) $errors['date'] = 'Data inválida.';
+    if (!in_array($time, SLOT_TIMES, true)) $errors['time'] = 'Horário inválido.';
+    if ($id === '') $errors['holdId'] = 'Identificador inválido.';
+    if ($errors) respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => $errors]);
+
+    if ($MOCK) {
+        if ($action === 'release') { mock_release($date, $time, $id); respond(200, ['ok' => true, 'mock' => true]); }
+        $r = mock_hold($date, $time, $id);
+        respond(!empty($r['ok']) ? 200 : 409, $r);
+    }
+
+    $res = call_script($SCRIPT, 'POST', ['action' => $action, 'secret' => $SECRET, 'date' => $date, 'time' => $time, 'holdId' => $id]);
+    if (isset($res['__error'])) { log_error($LOG_FILE, $action . ': ' . $res['__error']); respond(502, ['ok' => false, 'code' => 'UPSTREAM']); }
+    if (!empty($res['ok'])) respond(200, $action === 'hold' ? ['ok' => true, 'ttl' => max(1, (int)($res['ttl'] ?? 300))] : ['ok' => true]);
+    $code = (string)($res['code'] ?? 'UPSTREAM');
+    if ($code === 'SLOT_TAKEN') respond(409, ['ok' => false, 'code' => 'SLOT_TAKEN']);
+    if ($code === 'VALIDATION') respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => $res['fields'] ?? []]);
+    log_error($LOG_FILE, $action . ' code: ' . $code);
     respond(502, ['ok' => false, 'code' => 'UPSTREAM']);
 }
 

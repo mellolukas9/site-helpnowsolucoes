@@ -65,7 +65,8 @@ php -S localhost:8000 -t public_html tools/dev-router.php
 - [x] Acessibilidade: contraste AA, ordem de headings, skip link em todas as páginas, alvos ≥ 44px.
 - [x] Revisão mobile (10/10): faixas cobrem a seção, carrossel em "Na prática", "Seu momento" 2×2, menu com X/scroll lock/foco, WhatsApp some sobre CTA/rodapé, home em 390px de ~9.900px para ~6.300px. CSS/JS/HTML com `?v=3`.
 - [x] Backend publicado (11/10): Apps Script no ar (Web App do comercial@, `setup()` rodado, gatilho do lembrete criado) e `helpnow-config.php` pronto. Testado local contra a agenda REAL: `health` = live, horários de 15/10 em diante (seg–sex, 9–12h/14–18h), feriado de 02/11 bloqueado, origem `universo-totvs` no payload.
-- [ ] Republicar o `Code.gs` atual no Apps Script (a versão no ar é a original; ver `docs/05-backlog.md`).
+- [x] Rodada 2 (11/10): reserva temporária de 5 min (`hold`/`release`), contador real da campanha (`stats`), cronômetro SVG, "Adicionar à minha agenda" (Google/Outlook/Outlook.com/.ics), botões de WhatsApp "Fale conosco", correções mobile (header opaco, âncoras, WhatsApp flutuante). `?v=5`.
+- [ ] **Republicar o `Code.gs`** no Apps Script — OBRIGATÓRIO agora: `hold`, `release` e `stats` só existem na versão nova (sem isso o site segue funcionando, mas sem reserva e sem contador). Ver `docs/05-backlog.md`.
 - [ ] Upload (`dist/public_html.zip` + `helpnow-config.php` em `/home/este7243/`), teste ponta a ponta em produção, DKIM e mensagem de saudação do WhatsApp (ver `docs/05-backlog.md`).
 - [ ] Pendências em `docs/05-backlog.md`.
 

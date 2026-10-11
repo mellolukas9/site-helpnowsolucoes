@@ -9,6 +9,8 @@
  *  - doGet  ?action=slots : devolve os horários livres (regras de CONFIG + agenda real + feriados)
  *  - doPost  action=book  : revalida o horário, cria o evento com Google Meet, convida o cliente,
  *                           grava a linha na aba "Leads" e envia e-mails
+ *  - doGet  ?action=stats : { used, cap } da campanha (leads com origem = CAMPAIGN_ORIGIN e status ≠ Cancelado)
+ *  - doPost action=hold|release : reserva temporária (5 min) de um horário, via CacheService
  *  - sendReminders()      : gatilho de hora em hora — e-mail de lembrete ~24h antes
  *
  * Requer o serviço avançado "Google Calendar API" (Editor → Serviços → +).
@@ -32,6 +34,10 @@ const CONFIG = {
   SITE: 'https://helpnowsolucoes.com.br',
   SHEET_NAME: 'Leads',
   CACHE_SECONDS: 60,
+  HOLD_SECONDS: 300, // reserva temporária do horário enquanto o cliente preenche o formulário
+  CAMPAIGN_ORIGIN: 'universo-totvs', // origem (?origem=) contada na campanha
+  CAMPAIGN_CAP: 100, // vagas da campanha Universo TOTVS
+  STATS_CACHE_SECONDS: 60,
   // Reserva caso a agenda "Feriados no Brasil" não esteja assinada no comercial@
   HOLIDAYS_FALLBACK: [
     '2026-11-02', '2026-11-15', '2026-11-20', '2026-12-25',
@@ -55,7 +61,8 @@ function doGet(e) {
     const p = (e && e.parameter) || {};
     if (!checkSecret_(p.secret)) return json_({ ok: false, code: 'UNAUTHORIZED' });
     if (p.action === 'ping') return json_({ ok: true, now: new Date().toISOString() });
-    if (p.action === 'slots') return json_(Object.assign({ ok: true }, getSlots_(p.from, p.to)));
+    if (p.action === 'slots') return json_(Object.assign({ ok: true }, getSlots_(p.from, p.to, p.holdId)));
+    if (p.action === 'stats') return json_(Object.assign({ ok: true }, getStats_()));
     return json_({ ok: false, code: 'BAD_ACTION' });
   } catch (err) {
     console.error('doGet', err && err.stack || err);
@@ -68,6 +75,8 @@ function doPost(e) {
     const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (!checkSecret_(body.secret)) return json_({ ok: false, code: 'UNAUTHORIZED' });
     if (body.action === 'book') return json_(book_(body));
+    if (body.action === 'hold') return json_(hold_(body));
+    if (body.action === 'release') return json_(release_(body));
     return json_({ ok: false, code: 'BAD_ACTION' });
   } catch (err) {
     console.error('doPost', err && err.stack || err);
@@ -78,7 +87,12 @@ function doPost(e) {
 /* =========================================================================
    Horários
    ========================================================================= */
-function getSlots_(from, to) {
+function getSlots_(from, to, ownHoldId) {
+  return applyHolds_(getSlotsBase_(from, to), holdId_(ownHoldId));
+}
+
+/** Horários pela regra + agenda real (cacheado 60s). As reservas temporárias entram depois, em applyHolds_. */
+function getSlotsBase_(from, to) {
   const today = todayStr_();
   const first = maxStr_(today, CONFIG.START_DATE);
   const last = addDays_(today, CONFIG.HORIZON_DAYS);
@@ -174,6 +188,110 @@ function overlaps_(s, e, busy) {
 }
 
 /* =========================================================================
+   Reserva temporária (hold) — CacheService, TTL = CONFIG.HOLD_SECONDS
+   ========================================================================= */
+function holdKey_(date, time) { return 'hold:' + date + ':' + time; }
+function holderKey_(id) { return 'holder:' + id; }
+/** holdId gerado no navegador: 16–64 caracteres [A-Za-z0-9_-]. Inválido vira ''. */
+function holdId_(v) { const s = String(v == null ? '' : v); return /^[A-Za-z0-9_-]{16,64}$/.test(s) ? s : ''; }
+
+/** Remove a reserva (date,time) se for do holdId informado, e o índice do dono. */
+function dropHold_(date, time, id) {
+  if (!id) return;
+  const cache = CacheService.getScriptCache();
+  const k = holdKey_(date, time);
+  if (cache.get(k) === id) cache.remove(k);
+  if (cache.get(holderKey_(id)) === k) cache.remove(holderKey_(id));
+}
+
+/**
+ * Reserva o horário por HOLD_SECONDS. Uma pessoa (holdId) segura no máximo UM horário:
+ * ao reservar outro, o anterior é liberado. Outra pessoa já segurando → SLOT_TAKEN.
+ */
+function hold_(b) {
+  const date = String(b.date == null ? '' : b.date).slice(0, 10);
+  const time = String(b.time == null ? '' : b.time).slice(0, 5);
+  const id = holdId_(b.holdId);
+  const fields = {};
+  if (!isDate_(date)) fields.date = 'Data inválida.';
+  if (!/^\d{2}:00$/.test(time) || CONFIG.SLOT_HOURS.indexOf(parseInt(time, 10)) < 0) fields.time = 'Horário inválido.';
+  if (!id) fields.holdId = 'Identificador inválido.';
+  if (Object.keys(fields).length) return { ok: false, code: 'VALIDATION', fields: fields };
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return { ok: false, code: 'BUSY' };
+  try {
+    if (!isCandidate_(date, time)) return { ok: false, code: 'SLOT_TAKEN' };
+    const cache = CacheService.getScriptCache();
+    const k = holdKey_(date, time);
+    const cur = cache.get(k);
+    if (cur && cur !== id) return { ok: false, code: 'SLOT_TAKEN' };
+    const start = slotStart_(date, parseInt(time, 10));
+    const end = new Date(start.getTime() + CONFIG.SLOT_MINUTES * 60000);
+    if (overlaps_(start, end, getBusy_(date, addDays_(date, 1)))) return { ok: false, code: 'SLOT_TAKEN' };
+
+    const prev = cache.get(holderKey_(id));
+    if (prev && prev !== k && cache.get(prev) === id) cache.remove(prev); // solta o horário anterior
+    cache.put(k, id, CONFIG.HOLD_SECONDS);
+    cache.put(holderKey_(id), k, CONFIG.HOLD_SECONDS);
+    return { ok: true, ttl: CONFIG.HOLD_SECONDS };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Libera a reserva do próprio holdId. Idempotente. */
+function release_(b) {
+  const date = String(b.date == null ? '' : b.date).slice(0, 10);
+  const time = String(b.time == null ? '' : b.time).slice(0, 5);
+  const id = holdId_(b.holdId);
+  if (!id || !isDate_(date) || !/^\d{2}:00$/.test(time)) return { ok: true };
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return { ok: false, code: 'BUSY' };
+  try { dropHold_(date, time, id); } finally { lock.releaseLock(); }
+  return { ok: true };
+}
+
+/** Remove da lista os horários reservados por OUTRA pessoa (a reserva própria continua visível). */
+function applyHolds_(out, ownId) {
+  const keys = [];
+  out.days.forEach(function (d) { d.slots.forEach(function (t) { keys.push(holdKey_(d.date, t)); }); });
+  if (!keys.length) return out;
+  const held = CacheService.getScriptCache().getAll(keys);
+  return {
+    timezone: out.timezone,
+    days: out.days.map(function (d) {
+      return { date: d.date, slots: d.slots.filter(function (t) { const v = held[holdKey_(d.date, t)]; return !v || v === ownId; }) };
+    })
+  };
+}
+
+/* =========================================================================
+   Campanha Universo TOTVS — contador real
+   ========================================================================= */
+/** Leads com origem = CAMPAIGN_ORIGIN e status ≠ Cancelado. Cache de STATS_CACHE_SECONDS. */
+function getStats_() {
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('stats');
+  if (hit) return JSON.parse(hit);
+  const sh = sheet_();
+  const last = sh.getLastRow();
+  let used = 0;
+  if (last >= 2) {
+    const cOrigem = COLS.indexOf('Origem (URL)') + 1;
+    const cStatus = COLS.indexOf('Status') + 1;
+    const origens = sh.getRange(2, cOrigem, last - 1, 1).getValues();
+    const status = sh.getRange(2, cStatus, last - 1, 1).getValues();
+    for (let i = 0; i < origens.length; i++) {
+      if (String(origens[i][0]).trim().toLowerCase() === CONFIG.CAMPAIGN_ORIGIN && String(status[i][0]).trim() !== 'Cancelado') used++;
+    }
+  }
+  const out = { used: used, cap: CONFIG.CAMPAIGN_CAP };
+  cache.put('stats', JSON.stringify(out), CONFIG.STATS_CACHE_SECONDS);
+  return out;
+}
+
+/* =========================================================================
    Agendar
    ========================================================================= */
 function book_(b) {
@@ -185,6 +303,9 @@ function book_(b) {
   if (!lock.tryLock(20000)) return { ok: false, code: 'BUSY' };
   try {
     if (!isCandidate_(data.date, data.time)) return { ok: false, code: 'SLOT_TAKEN' };
+    // reserva de outra pessoa neste horário → ocupado. Sem reserva (ou reserva própria) → segue.
+    const heldBy = CacheService.getScriptCache().get(holdKey_(data.date, data.time));
+    if (heldBy && heldBy !== data.holdId) return { ok: false, code: 'SLOT_TAKEN' };
     const h = parseInt(data.time, 10);
     const start = slotStart_(data.date, h);
     const end = new Date(start.getTime() + CONFIG.SLOT_MINUTES * 60000);
@@ -205,6 +326,8 @@ function book_(b) {
 
     // O horário já está ocupado a partir daqui: invalida o cache antes de qualquer outra coisa.
     bumpCache_();
+    dropHold_(data.date, data.time, data.holdId); // a reserva cumpriu o papel
+    CacheService.getScriptCache().remove('stats'); // contador da campanha atualiza já
     const meetLink = event.hangoutLink || meetFromConference_(event) || '';
     const when = longDate_(data.date) + ', das ' + data.time + ' às ' + pad_(h + 1) + ':00 (horário de Brasília)';
 
@@ -270,7 +393,8 @@ function sanitize_(b) {
   return {
     date: s(b.date, 10), time: s(b.time, 5), nome: s(b.nome, 120), empresa: s(b.empresa, 120),
     whatsapp: s(b.whatsapp, 20), email: s(b.email, 160).toLowerCase(), erp: s(b.erp, 40), canal: s(b.canal, 40),
-    problema: s(b.problema, 1500, true), origem: s(b.origem, 40), assunto: s(b.assunto, 40), momento: s(b.momento, 4)
+    problema: s(b.problema, 1500, true), origem: s(b.origem, 40), assunto: s(b.assunto, 40), momento: s(b.momento, 4),
+    holdId: holdId_(b.holdId)
   };
 }
 

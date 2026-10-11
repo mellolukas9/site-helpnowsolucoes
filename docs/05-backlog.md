@@ -2,7 +2,7 @@
 
 ## Antes do lançamento (até 12/10)
 - [x] Backend do /agendamento publicado (Apps Script + planilha "leads"/aba Leads) e testado local contra a agenda real (11/10).
-- [ ] **Republicar o `apps-script/Code.gs` atual** no editor do Apps Script: Implantar → Gerenciar implantações → editar → **Nova versão** (mesma implantação, a URL `/exec` não muda). A versão no ar é a original; a atual acrescenta neutralização de fórmulas na planilha, nova tentativa + e-mail de emergência se a gravação falhar, e validação igual à do PHP. O contrato da API não mudou — o site funciona com qualquer das duas versões, mas publique a nova antes do lançamento.
+- [ ] **Republicar o `apps-script/Code.gs` atual (obrigatório na rodada 2: `hold`, `release` e `stats`)** no editor do Apps Script: Implantar → Gerenciar implantações → editar → **Nova versão** (mesma implantação, a URL `/exec` não muda). A versão no ar é a original; a atual acrescenta neutralização de fórmulas na planilha, nova tentativa + e-mail de emergência se a gravação falhar, e validação igual à do PHP. O contrato da API não mudou — o site funciona com qualquer das duas versões, mas publique a nova antes do lançamento.
 - [ ] Upload: `dist/public_html.zip` extraído em `public_html/` e `helpnow-config.php` em `/home/este7243/` (fora do `public_html`). Conferir `https://helpnowsolucoes.com.br/api/agenda.php?action=health` → `"mode":"live","config":true`.
 - [ ] Teste ponta a ponta em produção (1 agendamento real com e-mail de teste: evento + Meet + linha na planilha + e-mail de confirmação + aviso ao comercial@).
 - [ ] DKIM no Google Workspace e DNS (SPF/DMARC) — sem isso os e-mails de confirmação podem cair em spam.
@@ -16,6 +16,11 @@
 - [ ] Rodar Lighthouse na URL real após o deploy e conferir `?action=health` → `"mode":"live"`.
 - [ ] Atualizar o Apps Script publicando **nova versão na mesma implantação** (Code.gs mudou nesta rodada).
 - [ ] Se o site ficar atrás de proxy/CDN: o rate limit usa `REMOTE_ADDR`; avaliar `X-Forwarded-For` confiável.
+
+- [ ] Conferir o contador da campanha em produção: `https://helpnowsolucoes.com.br/api/agenda.php?action=stats` → `{"ok":true,"used":N,"cap":100}` (mudar `CAMPAIGN_CAP`/`CAMPAIGN_ORIGIN` no `CONFIG` do Code.gs se preciso).
+- [ ] Confirmar com o cliente a copy da faixa da campanha ("Universo TOTVS: 100 diagnósticos de 1 hora para quem passou pelo nosso estande.") e se pode usar "gratuito".
+- [ ] Testar a importação do `.ics` no Google Agenda/Outlook e os links do Outlook com contas reais (só validado o formato localmente).
+- [ ] Teste de reserva em produção com 2 navegadores (um segura o horário, o outro não o vê) — o `CacheService` não pôde ser exercitado fora do Google.
 
 ## Fase 2
 - [ ] Gravar leads também no **MySQL** da HostGator (ponto de extensão em `api/agenda.php`).

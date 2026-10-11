@@ -4,7 +4,8 @@
 # O Pages serve o site em /NOME-DO-REPO/ e não roda PHP. Por isso, só na cópia de saída:
 #   - caminhos absolutos (/assets/..., /agendamento) ganham o prefixo do repositório;
 #   - URLs limpas viram pastas (agendamento/index.html);
-#   - o /agendamento roda em modo mock (nada é gravado, nenhum e-mail é enviado);
+#   - o /agendamento roda em modo mock (nada é gravado, nenhum e-mail é enviado; reserva e calendário funcionam no navegador);
+#   - a faixa da campanha mostra só o texto (sem API, sem número);
 #   - páginas marcadas noindex e robots.txt bloqueando indexação.
 # Uso: tools/build-pages-demo.sh <prefixo> <pasta-de-saida>
 #   ex.: tools/build-pages-demo.sh /site-helpnowsolucoes _site
@@ -32,6 +33,8 @@ perl -pi -e 's{url\("/assets}{url("'"$BASE"'/assets}g' "$OUT/assets/css/styles.c
 perl -pi -e "s{'/agendamento\\?}{'$BASE/agendamento?}g" "$OUT/assets/js/main.js"
 perl -pi -e "s{var MOCK = params.get\\('mock'\\) === '1'}{var MOCK = true || params.get('mock') === '1'}" "$OUT/assets/js/agendamento.js"
 grep -q "var MOCK = true" "$OUT/assets/js/agendamento.js" || { echo "ERRO: não consegui forçar o modo mock" >&2; exit 1; }
+perl -pi -e "s{var DEMO = false;}{var DEMO = true;}" "$OUT/assets/js/campaign.js"
+grep -q "var DEMO = true" "$OUT/assets/js/campaign.js" || { echo "ERRO: não consegui marcar a demo na campanha" >&2; exit 1; }
 
 # URLs limpas: /agendamento e /politica-de-privacidade viram pastas
 for page in agendamento politica-de-privacidade; do

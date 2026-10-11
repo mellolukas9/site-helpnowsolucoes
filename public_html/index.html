@@ -20,7 +20,7 @@
 
   <link rel="preload" href="/assets/fonts/sora.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/css/styles.css?v=4">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=5">
 
   <script type="application/ld+json">
   {
@@ -80,6 +80,8 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a class="btn btn--ghost-light btn--lg" href="#momento">Qual é o meu momento?</a>
     </div>
+
+    <p class="campaign" data-campaign><span class="campaign__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18m-11 5 2 2 4-4"/></svg></span><span class="campaign__text" data-campaign-text>Universo TOTVS: 100 diagnósticos de 1 hora para quem passou pelo nosso estande.</span><span class="campaign__count" data-campaign-count hidden></span></p>
 
     <div class="journey" id="jornada">
       <div class="journey__label"><span>A JORNADA HELPNOW</span><i aria-hidden="true"></i></div>
@@ -166,6 +168,7 @@
           <h3>Pagamento e conciliação</h3>
           <p><span class="view-hoje">Conciliação bancária manual; fechamento atrasa.</span><span class="view-help">Conciliação apoiada pelo ERP e fechamento no prazo.</span></p></li>
       </ol>
+      <div class="flow-dots" aria-hidden="true"></div>
 
       <div class="result">
         <p><strong>Resultado: </strong><span class="view-hoje">retrabalho, dados duplicados e um fechamento que depende de planilha e de quem sabe fazer.</span><span class="view-help">um fluxo único e rastreável, com indicadores direto do ERP e o time focado no que importa.</span></p>
@@ -236,16 +239,16 @@
   <div class="slant" style="right:8%; width:140px; background:#060D2B; opacity:.25" aria-hidden="true"></div>
   <div class="slant" style="right:-1%; width:140px; background:#FFFFFF; opacity:.14" aria-hidden="true"></div>
   <div class="container">
-    <div class="badge60" aria-hidden="true"><strong>60</strong><span>MINUTOS</span></div>
+    <div class="badge60" aria-hidden="true"><svg class="chrono" viewBox="0 0 200 224" fill="none" focusable="false"><g transform="rotate(42 100 124)"><rect x="93" y="14" width="14" height="16" rx="3" fill="#3DDCFF"/><rect x="96" y="28" width="8" height="12" fill="#2E6BFF"/></g><rect x="86" y="6" width="28" height="14" rx="4" fill="#3DDCFF"/><rect x="94" y="19" width="12" height="18" fill="#2E6BFF"/><circle cx="100" cy="124" r="88" fill="#060D2B" stroke="#2E6BFF" stroke-width="6"/><circle class="chrono__arc" cx="100" cy="124" r="88" stroke="#3DDCFF" stroke-width="6" stroke-linecap="round" stroke-dasharray="46 507"/><path d="M107.3 54.4L107.9 48.4M114.6 55.5L115.8 49.7M121.6 57.4L123.5 51.7M128.5 60.1L130.9 54.6M141.1 67.4L144.7 62.5M146.8 72.0L150.9 67.5M152.0 77.2L156.5 73.1M156.6 82.9L161.5 79.3M163.9 95.5L169.4 93.1M166.6 102.4L172.3 100.5M168.5 109.4L174.3 108.2M169.6 116.7L175.6 116.1M169.6 131.3L175.6 131.9M168.5 138.6L174.3 139.8M166.6 145.6L172.3 147.5M163.9 152.5L169.4 154.9M156.6 165.1L161.5 168.7M152.0 170.8L156.5 174.9M146.8 176.0L150.9 180.5M141.1 180.6L144.7 185.5M128.5 187.9L130.9 193.4M121.6 190.6L123.5 196.3M114.6 192.5L115.8 198.3M107.3 193.6L107.9 199.6M92.7 193.6L92.1 199.6M85.4 192.5L84.2 198.3M78.4 190.6L76.5 196.3M71.5 187.9L69.1 193.4M58.9 180.6L55.3 185.5M53.2 176.0L49.1 180.5M48.0 170.8L43.5 174.9M43.4 165.1L38.5 168.7M36.1 152.5L30.6 154.9M33.4 145.6L27.7 147.5M31.5 138.6L25.7 139.8M30.4 131.3L24.4 131.9M30.4 116.7L24.4 116.1M31.5 109.4L25.7 108.2M33.4 102.4L27.7 100.5M36.1 95.5L30.6 93.1M43.4 82.9L38.5 79.3M48.0 77.2L43.5 73.1M53.2 72.0L49.1 67.5M58.9 67.4L55.3 62.5M71.5 60.1L69.1 54.6M78.4 57.4L76.5 51.7M85.4 55.5L84.2 49.7M92.7 54.4L92.1 48.4" stroke="#8FB2FF" stroke-opacity=".8" stroke-width="1.6" stroke-linecap="round"/><path d="M100.0 62.0L100.0 48.0M131.0 70.3L138.0 58.2M153.7 93.0L165.8 86.0M162.0 124.0L176.0 124.0M153.7 155.0L165.8 162.0M131.0 177.7L138.0 189.8M100.0 186.0L100.0 200.0M69.0 177.7L62.0 189.8M46.3 155.0L34.2 162.0M38.0 124.0L24.0 124.0M46.3 93.0L34.2 86.0M69.0 70.3L62.0 58.2" stroke="#3DDCFF" stroke-width="3.6" stroke-linecap="round"/><text x="100" y="139" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="54" letter-spacing="-2" fill="#fff">60</text><text x="100" y="161" text-anchor="middle" font-family="Sora, sans-serif" font-weight="700" font-size="11.5" letter-spacing="2.4" fill="#3DDCFF">MINUTOS</text></svg></div>
     <div class="cta__text">
       <h2 id="cta-title">Uma hora com um especialista HelpNow.</h2>
       <p>Traga um problema real do seu backoffice. Você sai com um diagnóstico claro e o próximo passo definido.</p>
       <div class="cta__btns">
         <a class="btn btn--dark btn--lg" href="/agendamento">Escolher data e horário
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btn btn--outline-white btn--lg" href="https://wa.me/5521968441647" target="_blank" rel="noopener">
+        <a class="btn btn--wa btn--wa-blue btn--lg" href="https://wa.me/5521968441647" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-          (21) 96844-1647</a>
+          Fale conosco</a>
       </div>
     </div>
   </div>
@@ -291,6 +294,7 @@
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
 </a>
 
-<script src="/assets/js/main.js?v=4" defer></script>
+<script src="/assets/js/campaign.js?v=5" defer></script>
+<script src="/assets/js/main.js?v=5" defer></script>
 </body>
 </html>

@@ -66,6 +66,9 @@ button, input, select, textarea { font: inherit; }
 .skip-link { position: absolute; left: 16px; top: -60px; z-index: 100; background: var(--white); color: var(--navy-900); padding: 10px 14px; border-radius: 8px; font-weight: 700; }
 .skip-link:focus { top: 12px; }
 main:focus { outline: none; }
+/* o alvo de uma âncora para abaixo do header sticky (senão o título/kicker some atrás da barra) */
+main section[id] { scroll-margin-top: calc(var(--header-h) + 1px); }
+#jornada { scroll-margin-top: calc(var(--header-h) + 14px); }
 [hidden] { display: none !important; }
 
 .container { max-width: var(--container); margin: 0 auto; padding-inline: var(--gutter); }
@@ -126,7 +129,7 @@ main:focus { outline: none; }
 /* ---------- Header ---------- */
 .site-header {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(6,13,43,.98); /* sem backdrop-filter: blur em header sticky pesa no scroll */
+  background: var(--navy-950); /* opaco: nada aparece por trás da barra; sem backdrop-filter (pesa no scroll) */
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 .site-header.is-scrolled { box-shadow: 0 10px 30px rgba(0,0,0,.25); }
@@ -315,9 +318,6 @@ main:focus { outline: none; }
 /* ---------- CTA final ---------- */
 .cta { background: var(--blue-500); color: var(--white); }
 .cta .container { padding-block: 104px; display: flex; flex-wrap: wrap; gap: 48px; align-items: center; }
-.badge60 { flex: none; width: 176px; height: 176px; border-radius: 50%; background: var(--navy-950); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 20px 60px rgba(6,13,43,.45); }
-.badge60 strong { font-family: var(--font-display); font-weight: 800; font-size: 68px; line-height: 1; }
-.badge60 span { font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .12em; color: var(--cyan-400); }
 .cta__text { flex: 999 1 460px; min-width: 0; }
 .cta h2 { margin: 0 0 14px; font-weight: 800; font-size: clamp(34px, 4.6vw, 50px); line-height: 1.04; letter-spacing: -0.04em; }
 .cta p { font-size: 19px; line-height: 1.6; color: var(--white); max-width: 620px; margin-bottom: 30px; }
@@ -350,8 +350,9 @@ main:focus { outline: none; }
 .wa-float:hover { color: var(--white); transform: translateY(-2px); }
 .wa-float { transition: opacity .2s ease, transform .2s ease, visibility .2s; }
 /* some quando o rodapé/CTA estão visíveis ou o menu está aberto (main.js) */
-.wa-float.is-hidden, html.nav-open .wa-float { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(8px); }
+.wa-float.is-hidden, .wa-float.is-covering, html.nav-open .wa-float { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(8px); }
 @media (prefers-reduced-motion: reduce) { .wa-float { transition: none; } }
+.wa-float.is-away:not(:focus-visible) { opacity: 0; transform: translateY(14px) scale(.9); pointer-events: none; }
 
 /* ==========================================================================
    /agendamento
@@ -364,8 +365,8 @@ main:focus { outline: none; }
 .ag-footer-bar a { display: inline-block; padding-block: 12px; }
 .ag-header .wordmark { font-size: 20px; }
 .ag-header__tag { font-family: var(--font-mono); font-size: 12px; color: var(--ink-600); border-left: 1px solid var(--line); padding-left: 12px; }
-.ag-header__wa { font-size: 14px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
-.ag-header__wa svg { width: 18px; height: 18px; }
+.ag-header__wa { font-size: 15px; display: inline-flex; align-items: center; gap: 8px; }
+.ag-header__wa svg { width: 20px; height: 20px; flex: none; }
 
 .ag-main { flex: 1; }
 .ag-main .container { padding-block: 40px 64px; display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
@@ -376,9 +377,6 @@ main:focus { outline: none; }
   border-radius: var(--radius-xl); padding: 36px; display: flex; flex-direction: column; gap: 22px;
 }
 .offer__badge { display: flex; align-items: center; gap: 16px; }
-.offer__circle { flex: none; width: 96px; height: 96px; border-radius: 50%; border: 3px solid #4D8BFF; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(77,139,255,.45); }
-.offer__circle strong { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 1; }
-.offer__circle span { font-family: var(--font-display); font-weight: 700; font-size: 10px; letter-spacing: .08em; }
 .offer__badge > span { font-family: var(--font-mono); font-size: 12px; color: #8FB2FF; letter-spacing: .06em; }
 .offer h1 { font-weight: 800; font-size: clamp(26px, 3vw, 32px); line-height: 1.15; letter-spacing: -0.02em; }
 .offer h1 span { color: #4D8BFF; }
@@ -391,8 +389,6 @@ main:focus { outline: none; }
 @media (max-width: 767px) {
   .offer { padding: 24px; gap: 14px; }
   .offer__desc, .offer ul, .offer__foot { display: none; }
-  .offer__circle { width: 72px; height: 72px; }
-  .offer__circle strong { font-size: 28px; }
 }
 
 .booking { flex: 999 1 560px; min-width: 0; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: clamp(22px, 3.4vw, 36px); }
@@ -581,9 +577,6 @@ main:focus { outline: none; }
 
   /* CTA final */
   .cta .container { padding-block: 48px; gap: 22px; }
-  .badge60 { width: 104px; height: 104px; }
-  .badge60 strong { font-size: 42px; }
-  .badge60 span { font-size: 11px; }
   .cta p { font-size: 17px; margin-bottom: 22px; }
   .cta__btns { flex-direction: column; align-items: stretch; }
   .cta__btns .btn { width: 100%; }
@@ -597,8 +590,8 @@ main:focus { outline: none; }
   .footer__bottom span { text-wrap: balance; }
 
   /* WhatsApp flutuante menor */
-  .wa-float { width: 48px; height: 48px; right: 14px; }
-  .wa-float svg { width: 24px; height: 24px; }
+  .wa-float { width: 44px; height: 44px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .wa-float svg { width: 22px; height: 22px; }
 }
 
 /* /agendamento — telas pequenas */
@@ -615,3 +608,88 @@ main:focus { outline: none; }
   .summary-bar strong { min-width: 0; }
   .link-btn { flex: none; margin-left: auto; }
 }
+
+/* ==========================================================================
+   Rodada 2 — WhatsApp, cronômetro, campanha, reserva, calendário
+   ========================================================================== */
+
+/* ---------- Botões de WhatsApp ("Fale conosco") ---------- */
+.wa-btn, .btn--wa {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 16px; border-radius: 12px;
+  border: 1.5px solid #25D366; background: var(--white); color: #075E54;
+  font-family: var(--font-body); font-weight: 800; text-decoration: none; cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .15s ease, box-shadow .2s ease;
+}
+.wa-btn svg, .btn--wa svg { width: 20px; height: 20px; flex: none; }
+/* hover/foco/ativo: verde-escuro (#075E54) com texto e ícone brancos — #25D366 com branco não passa AA (2,0:1) */
+.wa-btn:hover, .wa-btn:focus-visible, .wa-btn:active,
+.btn--wa:hover, .btn--wa:focus-visible, .btn--wa:active { background: #075E54; border-color: #075E54; color: var(--white); }
+.wa-btn:focus-visible, .btn--wa:focus-visible { outline: 3px solid #075E54; outline-offset: 3px; }
+.wa-btn:active, .btn--wa:active { transform: translateY(1px); }
+/* sobre o azul do CTA: contorno branco; o foco é branco para contrastar */
+.btn--wa-blue { background: transparent; border-color: var(--white); color: var(--white); }
+.btn--wa-blue:hover, .btn--wa-blue:focus-visible, .btn--wa-blue:active { color: var(--white); }
+.btn--wa-blue:focus-visible { outline-color: var(--white); }
+.btn--wa:hover { transform: translateY(-1px); }
+
+/* ---------- Cronômetro "60 minutos" ---------- */
+.chrono { display: block; width: 100%; height: auto; overflow: visible; }
+.badge60 { flex: none; width: 156px; }
+.badge60 .chrono { filter: drop-shadow(0 18px 30px rgba(6,13,43,.45)); }
+.offer__chrono { flex: none; width: 88px; }
+.offer__chrono .chrono { filter: drop-shadow(0 0 16px rgba(77,139,255,.5)); }
+.chrono__arc { transform-origin: 100px 124px; transform: rotate(-90deg); }
+@media (prefers-reduced-motion: no-preference) {
+  .chrono__arc { animation: chrono-lap 60s linear infinite; }
+  @keyframes chrono-lap { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+}
+@media (max-width: 767px) { .offer__chrono { width: 76px; } .badge60 { width: 112px; } }
+
+/* ---------- Campanha Universo TOTVS ---------- */
+.campaign {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; max-width: 760px;
+  margin-top: 22px; padding: 12px 16px; border-radius: 14px;
+  background: rgba(61,220,255,.08); border: 1px solid rgba(61,220,255,.35);
+  font-size: 15px; line-height: 1.45; color: var(--white);
+}
+.campaign__icon { display: inline-flex; color: var(--cyan-400); }
+.campaign__icon svg { width: 20px; height: 20px; }
+.campaign__text { flex: 1 1 180px; min-width: 0; }
+.campaign__count {
+  flex: none; font-family: var(--font-mono); font-weight: 500; font-size: 13px; letter-spacing: .04em;
+  padding: 4px 10px; border-radius: 999px; background: var(--cyan-400); color: var(--navy-950);
+}
+.offer .campaign { margin-top: 0; font-size: 14px; }
+@media (max-width: 767px) { .campaign { margin-top: 18px; padding: 10px 12px; font-size: 14px; } }
+
+/* ---------- Carrossel "Na prática": dica visual de que dá para rolar ---------- */
+.flow-dots { display: none; }
+@media (max-width: 767px) {
+  .flow:not(.is-end) { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 26px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 26px), transparent); }
+  .flow-dots { display: flex; justify-content: center; gap: 8px; margin: 2px 0 14px; }
+  .flow-dots i { width: 8px; height: 8px; border-radius: 50%; background: #B9C3DC; transition: background-color .2s ease, width .2s ease; }
+  .flow-dots i.is-active { width: 22px; border-radius: 999px; background: var(--blue-600); }
+}
+
+/* ---------- Reserva temporária (passo 2) ---------- */
+.hold-bar { margin: -8px 0 20px; padding: 10px 14px 12px; border-radius: 12px; background: #EAF3FF; border: 1px solid #BBD3FF; color: var(--navy-900); }
+.hold-bar__text { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; line-height: 1.3; }
+.hold-bar__icon { display: inline-flex; color: var(--blue-600); }
+.hold-bar__icon svg { width: 18px; height: 18px; }
+.hold-bar__time { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 500; color: var(--blue-600); }
+.hold-bar__track { height: 4px; margin-top: 9px; border-radius: 999px; background: #CFE0FF; overflow: hidden; }
+.hold-bar__fill { height: 100%; width: 100%; border-radius: inherit; background: var(--blue-600); transform-origin: left center; }
+.hold-bar.is-low { background: #FFF1E8; border-color: #FFC9A8; }
+.hold-bar.is-low .hold-bar__time, .hold-bar.is-low .hold-bar__icon { color: #B33F0E; }
+.hold-bar.is-low .hold-bar__fill { background: #C4501C; }
+
+/* ---------- Adicionar à minha agenda ---------- */
+.confirm__cal { width: 100%; display: grid; gap: 10px; }
+.confirm__cal-title { font-weight: 800; font-size: 15px; }
+.cal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.cal-btn { min-height: 48px; padding: 0 12px; gap: 8px; font-size: 14px; text-align: left; justify-content: flex-start; white-space: nowrap; }
+.cal-btn svg { width: 18px; height: 18px; flex: none; }
+.confirm__cal-note { font-size: 13px; color: var(--ink-600); }
+@media (min-width: 600px) { .cal-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 380px) { .cal-btn { padding: 0 8px; font-size: 13px; gap: 6px; } }
