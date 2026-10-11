@@ -18,9 +18,9 @@
 - [ ] Se o site ficar atrás de proxy/CDN: o rate limit usa `REMOTE_ADDR`; avaliar `X-Forwarded-For` confiável.
 
 - [ ] Conferir o contador da campanha em produção: `https://helpnowsolucoes.com.br/api/agenda.php?action=stats` → `{"ok":true,"used":N,"cap":100}` (mudar `CAMPAIGN_CAP`/`CAMPAIGN_ORIGIN` no `CONFIG` do Code.gs se preciso).
-- [ ] Confirmar com o cliente a copy da faixa da campanha ("Universo TOTVS: 100 diagnósticos de 1 hora para quem passou pelo nosso estande.") e se pode usar "gratuito".
+- [x] Faixa da campanha: opção A aprovada (rodada 3, sem "estande", com "gratuitos"); B e C comentadas no HTML se o cliente mudar de ideia.
 - [ ] Testar a importação do `.ics` no Google Agenda/Outlook e os links do Outlook com contas reais (só validado o formato localmente).
-- [ ] Teste de reserva em produção com 2 navegadores (um segura o horário, o outro não o vê) — o `CacheService` não pôde ser exercitado fora do Google.
+- [ ] Teste de reserva (agora de **3 min**) em produção com 2 navegadores (um segura o horário, o outro não o vê) — o `CacheService` não pôde ser exercitado fora do Google.
 
 ## Fase 2
 - [ ] Gravar leads também no **MySQL** da HostGator (ponto de extensão em `api/agenda.php`).

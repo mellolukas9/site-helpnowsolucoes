@@ -10,7 +10,7 @@
  *  - doPost  action=book  : revalida o horário, cria o evento com Google Meet, convida o cliente,
  *                           grava a linha na aba "Leads" e envia e-mails
  *  - doGet  ?action=stats : { used, cap } da campanha (leads com origem = CAMPAIGN_ORIGIN e status ≠ Cancelado)
- *  - doPost action=hold|release : reserva temporária (5 min) de um horário, via CacheService
+ *  - doPost action=hold|release : reserva temporária (3 min) de um horário, via CacheService
  *  - sendReminders()      : gatilho de hora em hora — e-mail de lembrete ~24h antes
  *
  * Requer o serviço avançado "Google Calendar API" (Editor → Serviços → +).
@@ -34,7 +34,7 @@ const CONFIG = {
   SITE: 'https://helpnowsolucoes.com.br',
   SHEET_NAME: 'Leads',
   CACHE_SECONDS: 60,
-  HOLD_SECONDS: 300, // reserva temporária do horário enquanto o cliente preenche o formulário
+  HOLD_SECONDS: 180, // reserva temporária (3 min) do horário enquanto o cliente preenche o formulário
   CAMPAIGN_ORIGIN: 'universo-totvs', // origem (?origem=) contada na campanha
   CAMPAIGN_CAP: 100, // vagas da campanha Universo TOTVS
   STATS_CACHE_SECONDS: 60,

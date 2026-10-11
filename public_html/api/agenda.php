@@ -213,10 +213,10 @@ function mock_holds(callable $fn): mixed {
     return is_array($result) && array_key_exists('__ret', $result) ? $result['__ret'] : $result;
 }
 
-/** TTL do mock: 300s; em servidor local aceita ?ttl=3..300 (teste de expiração). */
+/** TTL do mock: 180s (3 min); em servidor local aceita ?ttl=3..180 (teste de expiração). */
 function mock_ttl(): int {
-    $ttl = 300;
-    if (is_local_server() && isset($_GET['ttl'])) $ttl = max(3, min(300, (int)$_GET['ttl']));
+    $ttl = 180;
+    if (is_local_server() && isset($_GET['ttl'])) $ttl = max(3, min(180, (int)$_GET['ttl']));
     return $ttl;
 }
 
@@ -390,7 +390,7 @@ if (($action === 'hold' || $action === 'release') && $method === 'POST') {
 
     $res = call_script($SCRIPT, 'POST', ['action' => $action, 'secret' => $SECRET, 'date' => $date, 'time' => $time, 'holdId' => $id]);
     if (isset($res['__error'])) { log_error($LOG_FILE, $action . ': ' . $res['__error']); respond(502, ['ok' => false, 'code' => 'UPSTREAM']); }
-    if (!empty($res['ok'])) respond(200, $action === 'hold' ? ['ok' => true, 'ttl' => max(1, (int)($res['ttl'] ?? 300))] : ['ok' => true]);
+    if (!empty($res['ok'])) respond(200, $action === 'hold' ? ['ok' => true, 'ttl' => max(1, (int)($res['ttl'] ?? 180))] : ['ok' => true]);
     $code = (string)($res['code'] ?? 'UPSTREAM');
     if ($code === 'SLOT_TAKEN') respond(409, ['ok' => false, 'code' => 'SLOT_TAKEN']);
     if ($code === 'VALIDATION') respond(422, ['ok' => false, 'code' => 'VALIDATION', 'fields' => $res['fields'] ?? []]);

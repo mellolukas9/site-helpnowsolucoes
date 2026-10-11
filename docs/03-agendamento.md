@@ -77,7 +77,7 @@ O front só mostra "Restam X de N" com número real; qualquer falha (ou mock/dem
 ### `POST /api/agenda.php?action=hold`  (reserva temporária)
 ```json
 { "date": "2026-10-15", "time": "09:00", "holdId": "<gerado no navegador>" }
-200 { "ok": true, "ttl": 300 }                                  // segundos; o front conta a partir do ttl devolvido
+200 { "ok": true, "ttl": 180 }                                  // segundos (3 min); o front conta a partir do ttl devolvido
 409 { "ok": false, "code": "SLOT_TAKEN" }                       // outra pessoa já segura (ou o horário foi ocupado)
 422 { "ok": false, "code": "VALIDATION", "fields": { ... } }
 429 { "ok": false, "code": "RATE_LIMIT" }  ·  502 { "ok": false, "code": "UPSTREAM" }
@@ -86,7 +86,7 @@ O front só mostra "Restam X de N" com número real; qualquer falha (ou mock/dem
 Mesmo corpo do `hold`. Idempotente: `200 { "ok": true }` mesmo sem reserva. Aceita `Content-Type: text/plain` (usado pelo `navigator.sendBeacon` ao fechar a página).
 
 Regras da reserva (Code.gs):
-- Chave `hold:<date>:<time>` = `holdId` no `CacheService`, TTL `CONFIG.HOLD_SECONDS` (300 s), sob `LockService`.
+- Chave `hold:<date>:<time>` = `holdId` no `CacheService`, TTL `CONFIG.HOLD_SECONDS` (**180 s = 3 min**), sob `LockService`.
 - Um `holdId` segura **um** horário: reservar outro libera o anterior (índice `holder:<holdId>`).
 - `slots` não lista horários reservados por **outro** `holdId`; a reserva própria continua visível. As reservas são aplicadas **depois** do cache de 60 s dos horários (por isso não é preciso invalidar o cache a cada hold/release e a lista nunca fica defasada).
 - `book` aceita se o horário não tem reserva ou se ela é do mesmo `holdId`; reserva de outro → `SLOT_TAKEN`. Após agendar, a reserva é removida.
@@ -117,12 +117,16 @@ Validação: `agenda.php` (`clean()`) e `Code.gs` (`sanitize_`/`validate_`) apli
 | `assunto=reforma` | Pré-escreve o problema ("Quero avaliar se minha equipe está preparada para a Reforma Tributária (CBS/IBS).") |
 | `momento=01..04` | Pré-escreve o problema conforme o card "Seu momento" |
 | `mock=1` | Modo demonstração 100% no navegador (reserva entre abas via localStorage) |
-| `holdttl=15` | Reserva de 15 s para testar a expiração (**só localhost** e `mock=1`) |
+| `holdttl=15` | Reserva de 15 s para testar a expiração (máx. 180; **só localhost** e `mock=1`) |
 | `simular=409\|422\|429\|502\|hold502\|holdrede` | Força a resposta do mock (teste) |
 
 ## Campanha Universo TOTVS (`CONFIG` do Code.gs)
-`CAMPAIGN_ORIGIN: 'universo-totvs'` e `CAMPAIGN_CAP: 100` definem o contador; `HOLD_SECONDS: 300` a reserva; `STATS_CACHE_SECONDS: 60` o cache do `stats` (invalidado a cada agendamento).
-Faixa no hero da home e do `/agendamento` (`assets/js/campaign.js`). Copy: "Universo TOTVS: 100 diagnósticos de 1 hora para quem passou pelo nosso estande." — ajustável no HTML; **não prometer "gratuito" sem confirmação do cliente**.
+`CAMPAIGN_ORIGIN: 'universo-totvs'` e `CAMPAIGN_CAP: 100` definem o contador; `HOLD_SECONDS: 180` (3 min) a reserva; `STATS_CACHE_SECONDS: 60` o cache do `stats` (invalidado a cada agendamento).
+Faixa no hero da home e do `/agendamento` (`assets/js/campaign.js`). Copy (opção A, rodada 3): "Universo TOTVS: 100 diagnósticos de 1 hora, gratuitos, para quem nos conheceu no evento." As opções B e C ficam comentadas no HTML, ao lado da faixa. O card "02 Diagnosticamos" repete a mensagem ("Gratuito por tempo limitado — vagas limitadas." / "… restam X vagas." com número real).
+
+## Cronômetro (rodada 3)
+- **Home (CTA final):** relógio gigante decorativo na lateral esquerda (`.cta__clock`, SVG inline; diâmetro `--cta-d` ≈ 620 px, ~140 % da altura da seção; sangra à esquerda/em cima/embaixo). A coroa e o botão lateral ficam à direita do mostrador para continuarem visíveis apesar do corte. < 900 px vira fundo decorativo (opacidade .34, escurecido, para o texto manter AA). Arco + ponteiro dão uma volta de 60 s; estático com `prefers-reduced-motion`.
+- **/agendamento (hero):** o mesmo selo (110 px desktop / 96 px mobile) é o **timer real da reserva**, na mesma fonte de tempo da barra do passo 2: sem horário = "60 MINUTOS"; reserva ativa = `m:ss` + "RESERVADO" e o arco esvazia; expirou = volta ao estado inicial; agendado = arco cheio + check.
 
 ## "Adicionar à minha agenda" (passo 3)
 Gerado no navegador a partir do `start`/`end` ISO (UTC) da API: Google Agenda, Outlook/Microsoft 365 (`outlook.office.com`), Outlook.com (`outlook.live.com`) e `.ics` (`diagnostico-helpnow.ics`; UID, DTSTAMP, DTSTART/DTEND em UTC, SUMMARY "Diagnóstico HelpNow", DESCRIPTION/URL/LOCATION com o link do Meet). Sem `meetLink`, os botões aparecem sem o link.

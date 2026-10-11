@@ -35,5 +35,12 @@
         count.hidden = false;
       }
     });
+    // linha de urgência do card "02 Diagnosticamos" (só com número real; sem dado, fica o texto padrão do HTML)
+    Array.prototype.forEach.call(document.querySelectorAll('[data-campaign-card]'), function (line) {
+      var left = cap - used;
+      line.textContent = left <= 0
+        ? 'Vagas da campanha esgotadas — agende normalmente.'
+        : 'Gratuito por tempo limitado — ' + (left === 1 ? 'resta 1 vaga.' : 'restam ' + left + ' vagas.');
+    });
   }
 })();

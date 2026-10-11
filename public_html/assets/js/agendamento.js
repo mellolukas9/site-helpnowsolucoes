@@ -4,7 +4,7 @@
    Contrato da API: docs/03-agendamento.md
    As regras de agenda valem de verdade no Apps Script; aqui elas só orientam a interface.
    Modo demonstração (sem backend): abra /agendamento?mock=1
-     - ?holdttl=15            reserva de 15 s (testar a expiração) — só em localhost
+     - ?holdttl=15            reserva de 15 s (testar a expiração; máx. 180) — só em localhost
      - ?simular=409|422|429|502|hold502|holdrede   força a resposta do mock
    ========================================================================== */
 (function () {
@@ -16,14 +16,14 @@
     HORIZON_DAYS: 30,              // até quantos dias à frente mostrar
     TIMEZONE: 'America/Sao_Paulo',
     TIMEOUT_MS: 15000,
-    HOLD_SECONDS: 300,             // valor padrão; quem manda é o ttl devolvido pela API
+    HOLD_SECONDS: 180,             // valor padrão (3 min); quem manda é o ttl devolvido pela API
     WHATSAPP: 'https://wa.me/5521968441647'
   };
 
   var params = new URLSearchParams(location.search);
   var MOCK = params.get('mock') === '1' || location.protocol === 'file:';
   var IS_LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-  var DEV_TTL = IS_LOCAL || MOCK ? Math.max(0, Math.min(300, parseInt(params.get('holdttl'), 10) || 0)) : 0;
+  var DEV_TTL = IS_LOCAL || MOCK ? Math.max(0, Math.min(180, parseInt(params.get('holdttl'), 10) || 0)) : 0;
   var SIMULAR = IS_LOCAL || MOCK ? (params.get('simular') || '') : '';
 
   /* ---------- Datas (strings YYYY-MM-DD, sem depender do fuso do navegador) ---------- */
@@ -83,7 +83,7 @@
     toStep2: $('to-step-2'), summary: $('summary-text'), form: $('ag-form'), submit: $('submit-btn'),
     confirmTitle: $('confirm-title'), confirmWhen: $('confirm-when'), confirmEmail: $('confirm-email'),
     calGoogle: $('cal-google'), calOutlook: $('cal-outlook'), calLive: $('cal-live'), ics: $('ics-btn'),
-    holdBar: $('hold-bar'), holdTime: $('hold-time'), holdFill: $('hold-fill'), holdLive: $('hold-live')
+    holdBar: $('hold-bar'), holdTime: $('hold-time'), holdFill: $('hold-fill'), holdLive: $('hold-live'), chrono: $('ag-chrono')
   };
 
   /* ---------- Alertas ---------- */
@@ -142,14 +142,32 @@
     renderHold(left);
   }
 
+  var ARC_LEN = 2 * Math.PI * 80; // circunferência do arco do cronômetro (r=80)
+
+  /** Cronômetro do hero: idle ("60") · hold (mm:ss + arco que esvazia) · done (arco cheio + check). */
+  function setChrono(name, frac, clock) {
+    var c = el.chrono;
+    if (!c) return;
+    c.setAttribute('data-state', name);
+    var arc = c.querySelector('.chrono__arc');
+    if (name === 'idle') { arc.removeAttribute('style'); return; }
+    var f = name === 'done' ? 1 : Math.max(0, Math.min(1, frac));
+    arc.style.strokeDasharray = (f * ARC_LEN).toFixed(1) + ' ' + ARC_LEN.toFixed(1);
+    if (clock != null) c.querySelector('.chrono__time').textContent = clock;
+  }
+
+  /** Única fonte de tempo: o cronômetro, a barra do passo 2 e os avisos saem daqui. */
   function renderHold(left) {
     var h = state.hold;
-    if (!h || state.step !== 2) return;
+    if (!h) return;
     var sec = Math.ceil(left / 1000);
+    var frac = Math.max(0, Math.min(1, left / h.total));
+    setChrono('hold', frac, fmtClock(sec));
+    if (state.step !== 2) return;
     el.holdTime.textContent = fmtClock(sec);
-    el.holdFill.style.transform = 'scaleX(' + Math.max(0, Math.min(1, left / h.total)) + ')';
-    el.holdBar.classList.toggle('is-low', sec <= 60);
-    if (sec <= 60 && !h.warned && h.total > 60000) { h.warned = true; announce('Falta 1 minuto para o fim da reserva do horário.'); }
+    el.holdFill.style.transform = 'scaleX(' + frac + ')';
+    el.holdBar.classList.toggle('is-low', sec <= 30);
+    if (sec <= 30 && !h.warned && h.total > 30000) { h.warned = true; announce('Faltam 30 segundos para o fim da reserva do horário.'); }
   }
 
   function showHoldUI() {
@@ -163,7 +181,9 @@
       announce('Horário reservado para você por ' + (h.total >= 60000 ? mins + (mins === 1 ? ' minuto.' : ' minutos.') : Math.round(h.total / 1000) + ' segundos.'));
     }
   }
-  function hideHoldUI() { el.holdBar.hidden = true; }
+  function hideHoldBar() { el.holdBar.hidden = true; }
+  /** Esconde a barra e devolve o cronômetro ao estado inicial. */
+  function hideHoldUI() { hideHoldBar(); setChrono('idle'); }
 
   /** Descarta a reserva local; com release=true avisa o servidor (troca de horário/dia). */
   function dropHold(release) {
@@ -348,7 +368,7 @@
       li.querySelector('.stepper__dot').textContent = i < n ? '✓' : String(i);
       if (i === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
     });
-    if (n === 2) showHoldUI(); else hideHoldUI();
+    if (n === 2) showHoldUI(); else hideHoldBar(); // sair do passo 2 não interrompe a reserva
     var card = document.querySelector('.booking');
     if (card && card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -523,6 +543,7 @@
 
   function showConfirmation(v, data) {
     dropHold(false); // o servidor já removeu a reserva ao agendar
+    setChrono('done');
     var first = v.nome.split(/\s+/)[0];
     el.confirmTitle.textContent = 'Reunião confirmada, ' + first + '!';
     el.confirmWhen.textContent = selectionText();
