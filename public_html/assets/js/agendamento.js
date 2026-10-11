@@ -147,12 +147,19 @@
    * Cronômetro do hero: idle ("60" + animação de carregamento em loop, só CSS) · hold (mm:ss; o arco CARREGA de 0 a 100 %
    * conforme a reserva passa) · done (anel cheio + check). `frac` = fração de tempo RESTANTE; `low` = últimos 30 s (laranja).
    */
+  var ambient = window.HelpNowChrono ? window.HelpNowChrono(document.getElementById('ag-chrono')) : { running: function () { return false; }, start: function () {}, stop: function () {} };
+  ambient.start();   // o arco já corre ao abrir a página (180 s, linear)
   function setChrono(name, frac, clock, low) {
     var c = el.chrono;
     if (!c) return;
     c.setAttribute('data-state', name);
     var fill = c.querySelector('.chrono__fill'), tip = c.querySelector('.chrono__tip');
-    if (name === 'idle') { fill.removeAttribute('style'); tip.removeAttribute('style'); c.classList.remove('is-low'); return; }
+    if (name === 'idle') {
+      c.classList.remove('is-low');
+      if (!ambient.running()) { fill.removeAttribute('style'); tip.removeAttribute('style'); ambient.start(); }   // animação ambiente: recomeça do zero, sem texto
+      return;
+    }
+    ambient.stop();
     var remaining = name === 'done' ? 0 : Math.max(0, Math.min(1, frac));
     fill.style.strokeDashoffset = (remaining * 100).toFixed(2);                    // pathLength = 100
     tip.style.transform = 'rotate(' + ((1 - remaining) * 360).toFixed(1) + 'deg)';
