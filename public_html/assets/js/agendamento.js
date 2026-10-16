@@ -45,7 +45,8 @@
     var mo = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'UTC' }).format(d);
     return cap(wd) + ', ' + d.getUTCDate() + ' de ' + mo;
   }
-  function slotLabel(t) { var h = parseInt(t.slice(0, 2), 10); var e = String(h + 1).padStart(2, '0'); return t + ' – ' + e + t.slice(2); }
+  var SLOT_MIN = 30;             // duração do diagnóstico = passo entre os horários (igual a CONFIG.SLOT_MINUTES do Code.gs)
+  function slotLabel(t) { var m = parseInt(t.slice(0, 2), 10) * 60 + parseInt(t.slice(3, 5), 10) + SLOT_MIN; return t + ' – ' + String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
 
   var TODAY = todaySP();
   var FIRST = maxStr(TODAY, CONFIG.START_DATE);
@@ -144,7 +145,7 @@
   }
 
   /**
-   * Cronômetro do hero: idle ("60" + animação de carregamento em loop, só CSS) · hold (mm:ss; o arco CARREGA de 0 a 100 %
+   * Cronômetro do hero: idle ("30" + animação de carregamento em loop, só CSS) · hold (mm:ss; o arco CARREGA de 0 a 100 %
    * conforme a reserva passa) · done (anel cheio + check). `frac` = fração de tempo RESTANTE; `low` = últimos 30 s (laranja).
    */
   var ambient = window.HelpNowChrono ? window.HelpNowChrono(document.getElementById('ag-chrono')) : { running: function () { return false; }, start: function () {}, stop: function () {} };
@@ -406,7 +407,7 @@
   $('back-to-1b').addEventListener('click', function () { clearAlert(); goStep(1); });
 
   /* ---------- Passo 2: formulário ---------- */
-  var ORIGENS = { 'universo-totvs': 'Universo TOTVS', 'linkedin': 'LinkedIn', 'instagram': 'Instagram', 'google': 'Google' };
+  var ORIGENS = { 'linkedin': 'LinkedIn', 'instagram': 'Instagram', 'google': 'Google' };
   var origem = (params.get('origem') || '').toLowerCase();
   if (ORIGENS[origem]) $('f-canal').value = ORIGENS[origem];
 
@@ -542,7 +543,7 @@
 
   /* ---------- Passo 3: confirmação + "Adicionar à minha agenda" ---------- */
   var CAL_TITLE = 'Diagnóstico HelpNow';
-  function calDescription(meet) { return 'Reunião de diagnóstico de 60 min com a HelpNow.' + (meet ? ' Link: ' + meet : ''); }
+  function calDescription(meet) { return 'Reunião de diagnóstico de 30 min com a HelpNow.' + (meet ? ' Link: ' + meet : ''); }
   function stampUTC(d) { return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
   function isoUTC(d) { return d.toISOString().replace(/\.\d{3}Z$/, 'Z'); }
   var enc = encodeURIComponent;
@@ -553,9 +554,9 @@
     var e = data && data.end && !isNaN(Date.parse(data.end)) ? new Date(data.end) : null;
     if (!s) {
       var p = state.date.split('-').map(Number);
-      s = new Date(Date.UTC(p[0], p[1] - 1, p[2], parseInt(state.time.slice(0, 2), 10) + 3, 0, 0));
+      s = new Date(Date.UTC(p[0], p[1] - 1, p[2], parseInt(state.time.slice(0, 2), 10) + 3, parseInt(state.time.slice(3, 5), 10), 0));
     }
-    if (!e || e <= s) e = new Date(s.getTime() + 3600000);
+    if (!e || e <= s) e = new Date(s.getTime() + SLOT_MIN * 60000);
     return { s: s, e: e };
   }
 
@@ -617,7 +618,7 @@
 
   /* ---------- API simulada (?mock=1) ---------- */
   function mockApi() {
-    var HOURS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
+    var HOURS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'];
     var HOLIDAYS = ['2026-11-02', '2026-11-15', '2026-11-20', '2026-12-25'];
     var LS_KEY = 'helpnow-mock-holds';       // compartilhado entre abas do mesmo navegador → "duas abas disputando"
     var booked = {};
@@ -633,9 +634,9 @@
     }
     function writeHolds(o) { mem = o; try { localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch (e) { /* ok: usa memória */ } }
     function iso(date, time) {
-      var p = date.split('-').map(Number), h = parseInt(time.slice(0, 2), 10);
-      var s = new Date(Date.UTC(p[0], p[1] - 1, p[2], h + 3, 0, 0));
-      return { start: s.toISOString(), end: new Date(s.getTime() + 3600000).toISOString() };
+      var p = date.split('-').map(Number), h = parseInt(time.slice(0, 2), 10), mi = parseInt(time.slice(3, 5), 10);
+      var s = new Date(Date.UTC(p[0], p[1] - 1, p[2], h + 3, mi, 0));
+      return { start: s.toISOString(), end: new Date(s.getTime() + SLOT_MIN * 60000).toISOString() };
     }
 
     return {

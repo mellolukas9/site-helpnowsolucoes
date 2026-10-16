@@ -37,7 +37,7 @@
       if (e.relatedTarget && !nav.contains(e.relatedTarget) && e.relatedTarget !== toggle) setOpen(false, false);
     });
     // ao ampliar para o layout de desktop, o menu volta ao normal
-    var desktop = window.matchMedia('(min-width: 1024px)');
+    var desktop = window.matchMedia('(min-width: 1340px)');
     var onDesktop = function () { if (desktop.matches) setOpen(false, false); };
     if (desktop.addEventListener) desktop.addEventListener('change', onDesktop); else desktop.addListener(onDesktop);
   }
@@ -186,7 +186,6 @@
       f('tag').textContent = m.tag;
       f('title').textContent = m.title;
       f('body').textContent = m.body;
-      f('cta').setAttribute('href', '/agendamento?momento=0' + (i + 1));
       var ul = f('items');
       ul.innerHTML = '';
       m.items.forEach(function (txt) {

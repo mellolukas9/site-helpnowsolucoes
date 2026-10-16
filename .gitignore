@@ -9,3 +9,6 @@ node_modules/
 dist/
 *.zip
 _site/
+
+# Capturas do Playwright
+.playwright-mcp/

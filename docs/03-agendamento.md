@@ -26,7 +26,7 @@ Apps Script  (comercial@ · Code.gs)
 | Fuso | America/Sao_Paulo (UTC-03:00) |
 | Início | 15/10/2026 |
 | Dias | segunda a sexta |
-| Horários | 09, 10, 11, 14, 15, 16, 17h (reuniões de 60 min; almoço 12–14h bloqueado) |
+| Horários | a cada 30 min, 09:00–11:30 e 14:00–17:30 (reuniões de 30 min; `CONFIG.WINDOWS` + `SLOT_MINUTES`; almoço 12–14h bloqueado). Formato `HH:MM` em toda a API |
 | Intervalo entre reuniões | nenhum |
 | Antecedência mínima | 2 horas |
 | Fim da agenda | **20/12/2026** (`CONFIG.END_DATE`, inclusive). Horários de `max(hoje, START_DATE)` até `END_DATE`; sem horizonte rolante |
@@ -51,7 +51,7 @@ Intervalo máximo 31 dias. O front pede semana a semana (seg–sex).
 ```
 Valores aceitos:
 - `erp`: TOTVS RM · TOTVS Protheus · Outro ERP · Planilhas / ainda sem ERP
-- `canal`: Universo TOTVS · LinkedIn · Instagram · Google
+- `canal`: Universo TOTVS (só para leads antigos; o formulário não oferece mais) · LinkedIn · Instagram · Google
 
 Respostas:
 | HTTP | Corpo | Front faz |

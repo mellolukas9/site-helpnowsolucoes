@@ -6,7 +6,7 @@ Leia este arquivo inteiro antes de qualquer alteração. Detalhes em `docs/`.
 Site institucional + agendamento da **HelpNow — Consultoria e Gestão de Negócios** (`helpnowsolucoes.com.br`).
 A HelpNow faz gestão, eficiência e processos para empresas com **TOTVS RM** e **TOTVS Protheus** (Backoffice, Imobiliário, Educacional, RH) e também atende quem ainda gerencia o negócio em planilha.
 
-**Objetivo do site:** converter visitantes em **reuniões de diagnóstico de 60 minutos**.
+**Objetivo do site:** converter visitantes em **reuniões de diagnóstico de 30 minutos**.
 A peça mais importante é o **/agendamento**: consulta a agenda real do `comercial@helpnowsolucoes.com.br`, cria o evento com Google Meet e grava o lead numa planilha.
 Origem principal de tráfego no lançamento: QR Code do cartão (evento Universo TOTVS, 13/10/2026) → WhatsApp Business → `https://helpnowsolucoes.com.br/agendamento?origem=universo-totvs`.
 

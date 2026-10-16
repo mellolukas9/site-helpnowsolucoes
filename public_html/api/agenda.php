@@ -37,7 +37,7 @@ $LOG_FILE  = (string)($cfg['LOG_FILE'] ?? dirname($docRoot) . '/helpnow-agenda.l
 
 const ERP_OPTIONS   = ['TOTVS RM', 'TOTVS Protheus', 'Outro ERP', 'Planilhas / ainda sem ERP'];
 const CANAL_OPTIONS = ['Universo TOTVS', 'LinkedIn', 'Instagram', 'Google'];
-const SLOT_TIMES    = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
+const SLOT_TIMES    = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'];
 
 function respond(int $status, array $data): never {
     http_response_code($status);
@@ -162,7 +162,7 @@ function read_json_body(): array {
 function slot_iso(string $date, string $time): array {
     $start = new DateTimeImmutable($date . ' ' . $time . ':00', new DateTimeZone('-03:00'));
     $utc = new DateTimeZone('UTC');
-    return [$start->setTimezone($utc)->format('Y-m-d\TH:i:s.000\Z'), $start->modify('+1 hour')->setTimezone($utc)->format('Y-m-d\TH:i:s.000\Z')];
+    return [$start->setTimezone($utc)->format('Y-m-d\TH:i:s.000\Z'), $start->modify('+30 minutes')->setTimezone($utc)->format('Y-m-d\TH:i:s.000\Z')];
 }
 
 /** Chama o Apps Script. O /exec responde 302 → googleusercontent; o cURL segue como GET (correto). */
@@ -364,7 +364,7 @@ if ($action === 'stats' && $method === 'GET') {
     simulate_response();
     check_origin($ORIGINS, false);
     if (!rate_limit('stats', 60, 600)) respond(429, ['ok' => false, 'code' => 'RATE_LIMIT']);
-    if ($MOCK) respond(200, ['ok' => true, 'mock' => true]); // sem número no mock: o front mostra só o texto da campanha
+    if ($MOCK) respond(200, ['ok' => true, 'mock' => true]); // sem número no mock: endpoint legado: o site não exibe mais contador
 
     $res = call_script($SCRIPT, 'GET', ['action' => 'stats', 'secret' => $SECRET]);
     if (isset($res['__error'])) { log_error($LOG_FILE, 'stats: ' . $res['__error']); respond(502, ['ok' => false, 'code' => 'UPSTREAM']); }

@@ -25,8 +25,8 @@ const CONFIG = {
   UTC_OFFSET: '-03:00', // Brasil sem horário de verão desde 2019
   START_DATE: '2026-10-15',
   WEEKDAYS: [1, 2, 3, 4, 5], // seg..sex
-  SLOT_HOURS: [9, 10, 11, 14, 15, 16, 17], // 9–12h e 14–18h (almoço 12–14 bloqueado)
-  SLOT_MINUTES: 60,
+  WINDOWS: [['09:00', '12:00'], ['14:00', '18:00']], // janelas de atendimento (almoço 12–14 bloqueado); o último início é janela.fim − SLOT_MINUTES
+  SLOT_MINUTES: 30, // duração do diagnóstico e passo entre os horários (09:00, 09:30, … 11:30, 14:00, … 17:30)
   MIN_NOTICE_HOURS: 2,
   END_DATE: '2026-12-20', // último dia da agenda (inclusive); a agenda abre de max(hoje, START_DATE) até aqui
   NOTIFY_EMAIL: 'comercial@helpnowsolucoes.com.br',
@@ -120,12 +120,12 @@ function getSlotsBase_(from, to) {
   for (let d = from; d <= to; d = addDays_(d, 1)) {
     const slots = [];
     if (d >= first && d <= last && CONFIG.WEEKDAYS.indexOf(weekday_(d)) >= 0 && !holidays[d]) {
-      CONFIG.SLOT_HOURS.forEach(function (h) {
-        const s = slotStart_(d, h);
+      slotTimes_().forEach(function (t) {
+        const s = slotStart_(d, t);
         const e = new Date(s.getTime() + CONFIG.SLOT_MINUTES * 60000);
         if (s.getTime() < minStart) return;
         if (overlaps_(s, e, busy)) return;
-        slots.push(pad_(h) + ':00');
+        slots.push(t);
       });
     }
     days.push({ date: d, slots: slots });
@@ -137,13 +137,11 @@ function getSlotsBase_(from, to) {
 
 /** Valida se date+time é um horário oferecido pelas regras (sem olhar a agenda). */
 function isCandidate_(date, time) {
-  if (!isDate_(date) || !/^\d{2}:00$/.test(time)) return false;
-  const h = parseInt(time, 10);
+  if (!isDate_(date) || !isSlotTime_(time)) return false;
   const today = todayStr_();
   if (date < maxStr_(today, CONFIG.START_DATE) || date > CONFIG.END_DATE) return false;
   if (CONFIG.WEEKDAYS.indexOf(weekday_(date)) < 0) return false;
-  if (CONFIG.SLOT_HOURS.indexOf(h) < 0) return false;
-  if (slotStart_(date, h).getTime() < Date.now() + CONFIG.MIN_NOTICE_HOURS * 3600 * 1000) return false;
+  if (slotStart_(date, time).getTime() < Date.now() + CONFIG.MIN_NOTICE_HOURS * 3600 * 1000) return false;
   if (getHolidays_(date, addDays_(date, 1))[date]) return false;
   return true;
 }
@@ -215,7 +213,7 @@ function hold_(b) {
   const id = holdId_(b.holdId);
   const fields = {};
   if (!isDate_(date)) fields.date = 'Data inválida.';
-  if (!/^\d{2}:00$/.test(time) || CONFIG.SLOT_HOURS.indexOf(parseInt(time, 10)) < 0) fields.time = 'Horário inválido.';
+  if (!isSlotTime_(time)) fields.time = 'Horário inválido.';
   if (!id) fields.holdId = 'Identificador inválido.';
   if (Object.keys(fields).length) return { ok: false, code: 'VALIDATION', fields: fields };
 
@@ -227,7 +225,7 @@ function hold_(b) {
     const k = holdKey_(date, time);
     const cur = cache.get(k);
     if (cur && cur !== id) return { ok: false, code: 'SLOT_TAKEN' };
-    const start = slotStart_(date, parseInt(time, 10));
+    const start = slotStart_(date, time);
     const end = new Date(start.getTime() + CONFIG.SLOT_MINUTES * 60000);
     if (overlaps_(start, end, getBusy_(date, addDays_(date, 1)))) return { ok: false, code: 'SLOT_TAKEN' };
 
@@ -246,7 +244,7 @@ function release_(b) {
   const date = String(b.date == null ? '' : b.date).slice(0, 10);
   const time = String(b.time == null ? '' : b.time).slice(0, 5);
   const id = holdId_(b.holdId);
-  if (!id || !isDate_(date) || !/^\d{2}:00$/.test(time)) return { ok: true };
+  if (!id || !isDate_(date) || !isSlotTime_(time)) return { ok: true };
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return { ok: false, code: 'BUSY' };
   try { dropHold_(date, time, id); } finally { lock.releaseLock(); }
@@ -313,8 +311,7 @@ function book_(b) {
     // reserva de outra pessoa neste horário → ocupado. Sem reserva (ou reserva própria) → segue.
     const heldBy = CacheService.getScriptCache().get(holdKey_(data.date, data.time));
     if (heldBy && heldBy !== data.holdId) return { ok: false, code: 'SLOT_TAKEN' };
-    const h = parseInt(data.time, 10);
-    const start = slotStart_(data.date, h);
+    const start = slotStart_(data.date, data.time);
     const end = new Date(start.getTime() + CONFIG.SLOT_MINUTES * 60000);
     const busy = getBusy_(data.date, addDays_(data.date, 1));
     if (overlaps_(start, end, busy)) return { ok: false, code: 'SLOT_TAKEN' };
@@ -322,8 +319,8 @@ function book_(b) {
     let event = Calendar.Events.insert({
       summary: 'Diagnóstico HelpNow — ' + data.empresa,
       description: eventDescription_(data),
-      start: { dateTime: isoLocal_(data.date, h), timeZone: CONFIG.TIMEZONE },
-      end: { dateTime: isoLocal_(data.date, h + 1), timeZone: CONFIG.TIMEZONE },
+      start: { dateTime: isoLocal_(data.date, data.time), timeZone: CONFIG.TIMEZONE },
+      end: { dateTime: isoLocal_(data.date, endTime_(data.time)), timeZone: CONFIG.TIMEZONE },
       attendees: [{ email: data.email, displayName: data.nome }],
       conferenceData: { createRequest: { requestId: Utilities.getUuid(), conferenceSolutionKey: { type: 'hangoutsMeet' } } },
       reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 30 }] },
@@ -336,7 +333,7 @@ function book_(b) {
     dropHold_(data.date, data.time, data.holdId); // a reserva cumpriu o papel
     CacheService.getScriptCache().remove('stats'); // contador da campanha atualiza já
     const meetLink = event.hangoutLink || meetFromConference_(event) || '';
-    const when = longDate_(data.date) + ', das ' + data.time + ' às ' + pad_(h + 1) + ':00 (horário de Brasília)';
+    const when = whenLabel_(data.date, data.time);
 
     // O evento já existe e o cliente foi convidado. Se a planilha falhar, tenta de novo e,
     // em último caso, avisa o comercial@ por e-mail com os dados do lead (nada se perde).
@@ -444,7 +441,7 @@ function sanitize_(b) {
 function validate_(d) {
   const f = {};
   if (!isDate_(d.date)) f.date = 'Data inválida.';
-  if (!/^\d{2}:00$/.test(d.time) || CONFIG.SLOT_HOURS.indexOf(parseInt(d.time, 10)) < 0) f.time = 'Horário inválido.';
+  if (!isSlotTime_(d.time)) f.time = 'Horário inválido.';
   if (d.nome.length < 3) f.nome = 'Informe seu nome completo.';
   if (d.empresa.length < 2) f.empresa = 'Informe o nome da empresa.';
   const digits = d.whatsapp.replace(/\D/g, '');
@@ -457,7 +454,7 @@ function validate_(d) {
 
 function eventDescription_(d) {
   return [
-    'Diagnóstico HelpNow — 60 minutos', '',
+    'Diagnóstico HelpNow — ' + CONFIG.SLOT_MINUTES + ' minutos', '',
     'Nome: ' + d.nome, 'Empresa: ' + d.empresa, 'WhatsApp: ' + d.whatsapp, 'E-mail: ' + d.email,
     'ERP: ' + d.erp, 'Como nos encontrou: ' + d.canal,
     d.origem ? 'Origem (URL): ' + d.origem : '', d.assunto ? 'Assunto: ' + d.assunto : '', d.momento ? 'Momento: ' + d.momento : '',
@@ -478,7 +475,7 @@ function meetFromConference_(ev) {
 function sendClientConfirmation_(d, when, meet) {
   const first = d.nome.split(/\s+/)[0];
   const html = emailLayout_('Reunião confirmada, ' + esc_(first) + '!',
-    '<p style="margin:0 0 16px">Seu diagnóstico de 60 minutos com um especialista HelpNow está agendado.</p>' +
+    '<p style="margin:0 0 16px">Seu diagnóstico de ' + CONFIG.SLOT_MINUTES + ' minutos com um especialista HelpNow está agendado.</p>' +
     infoBox_(when, meet) +
     '<p style="margin:20px 0 8px;font-weight:700">Para aproveitar melhor a conversa</p>' +
     '<ul style="margin:0 0 16px;padding-left:20px;color:#2B3757">' +
@@ -502,7 +499,7 @@ function sendInternalNotice_(d, when, meet, eventLink) {
 
 function infoBox_(when, meet) {
   return '<div style="background:#F2F4FA;border-radius:12px;padding:16px 18px">' +
-    '<div style="font-family:monospace;font-size:12px;color:#46516E;letter-spacing:.08em">DIAGNÓSTICO HELPNOW · 60 MIN</div>' +
+    '<div style="font-family:monospace;font-size:12px;color:#46516E;letter-spacing:.08em">DIAGNÓSTICO HELPNOW · ' + CONFIG.SLOT_MINUTES + ' MIN</div>' +
     '<div style="font-weight:800;font-size:17px;margin:6px 0">' + esc_(when) + '</div>' +
     (meet ? '<a href="' + meet + '" style="display:inline-block;margin-top:6px;background:#2E6BFF;color:#fff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:10px">Entrar no Google Meet</a>' : '') +
     '</div>';
@@ -534,8 +531,8 @@ function sendReminders() {
       if (row[idx('Status')] !== 'Agendado' || row[idx('Lembrete enviado')]) continue;
       const date = cellDate_(row[idx('Data reunião')]);
       const time = String(row[idx('Horário')]).slice(0, 5);
-      if (!date || !/^\d{2}:\d{2}$/.test(time)) continue;
-      const start = slotStart_(date, parseInt(time, 10)).getTime();
+      if (!date || !isSlotTime_(time)) continue;
+      const start = slotStart_(date, time).getTime();
       const diffH = (start - now) / 3600000;
       if (diffH < 22 || diffH > 25) continue;
 
@@ -549,7 +546,7 @@ function sendReminders() {
       if (cancelled) { sh.getRange(r + 1, idx('Status') + 1).setValue('Cancelado'); continue; }
 
       const nome = String(row[idx('Nome')]);
-      const when = longDate_(date) + ', das ' + time + ' às ' + pad_(parseInt(time, 10) + 1) + ':00 (horário de Brasília)';
+      const when = whenLabel_(date, time);
       const meet = String(row[idx('Link do Meet')] || '');
       const html = emailLayout_('Amanhã: seu diagnóstico HelpNow',
         '<p style="margin:0 0 16px">Olá, ' + esc_(nome.split(/\s+/)[0]) + '! Passando para lembrar da nossa conversa.</p>' + infoBox_(when, meet) +
@@ -604,7 +601,7 @@ function testSlots() {
 
 function testEmailPreview() {
   const d = { nome: 'Teste Silva', empresa: 'Empresa Teste', email: Session.getActiveUser().getEmail(), whatsapp: '(21) 90000-0000', erp: 'TOTVS RM', canal: 'Universo TOTVS', problema: 'Teste de layout', origem: '', assunto: '', momento: '' };
-  sendClientConfirmation_(d, 'Quinta-feira, 15 de outubro, das 09:00 às 10:00 (horário de Brasília)', 'https://meet.google.com/abc-defg-hij');
+  sendClientConfirmation_(d, 'Quinta-feira, 15 de outubro, das 09:00 às 09:30 (horário de Brasília)', 'https://meet.google.com/abc-defg-hij');
   console.log('E-mail de teste enviado para ' + d.email);
 }
 
@@ -627,8 +624,25 @@ function maxStr_(a, b) { return a > b ? a : b; }
 function todayStr_() { return Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd'); }
 function addDays_(s, n) { const p = s.split('-').map(Number); const d = new Date(Date.UTC(p[0], p[1] - 1, p[2] + n)); return d.toISOString().slice(0, 10); }
 function weekday_(s) { const p = s.split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay(); }
-function isoLocal_(date, h) { return date + 'T' + pad_(h) + ':00:00' + CONFIG.UTC_OFFSET; }
-function slotStart_(date, h) { return new Date(isoLocal_(date, h)); }
+/** 'HH:MM' → minutos desde 00:00 (ou -1 se o formato for inválido). */
+function toMin_(t) { const m = /^(\d{2}):(\d{2})$/.exec(String(t)); return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : -1; }
+/** minutos desde 00:00 → 'HH:MM'. */
+function fromMin_(n) { return pad_(Math.floor(n / 60)) + ':' + pad_(n % 60); }
+/** Todos os horários de início do dia, em 'HH:MM', a cada SLOT_MINUTES dentro de CONFIG.WINDOWS. */
+function slotTimes_() {
+  const out = [];
+  CONFIG.WINDOWS.forEach(function (w) {
+    for (let m = toMin_(w[0]); m + CONFIG.SLOT_MINUTES <= toMin_(w[1]); m += CONFIG.SLOT_MINUTES) out.push(fromMin_(m));
+  });
+  return out;
+}
+function isSlotTime_(t) { return slotTimes_().indexOf(t) >= 0; }
+/** 'HH:MM' de término do diagnóstico que começa em t. */
+function endTime_(t) { return fromMin_(toMin_(t) + CONFIG.SLOT_MINUTES); }
+/** Ex.: "Terça-feira, 20 de outubro, das 10:30 às 11:00 (horário de Brasília)". */
+function whenLabel_(date, t) { return longDate_(date) + ', das ' + t + ' às ' + endTime_(t) + ' (horário de Brasília)'; }
+function isoLocal_(date, t) { return date + 'T' + t + ':00' + CONFIG.UTC_OFFSET; }
+function slotStart_(date, t) { return new Date(isoLocal_(date, t)); }
 function dayStart_(date) { return new Date(date + 'T00:00:00' + CONFIG.UTC_OFFSET); }
 function cellDate_(v) { if (v instanceof Date) return Utilities.formatDate(v, CONFIG.TIMEZONE, 'yyyy-MM-dd'); const s = String(v).trim(); return isDate_(s) ? s : ''; }
 function longDate_(s) {

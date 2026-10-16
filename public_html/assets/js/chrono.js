@@ -1,4 +1,4 @@
-/* HelpNow — arco de carregamento do cronômetro "60 minutos" (animação ambiente, sem dependências).
+/* HelpNow — arco de carregamento do cronômetro "30 minutos" (animação ambiente, sem dependências).
    0 -> 100 % em 3 min reais (linear), segura cheio 1,5 s, some em 0,4 s e recomeça do zero.
    Baseado em performance.now() + setInterval (nunca só rAF): não atrasa com aba/janela em segundo plano. Nada é salvo; F5 reinicia. */
 (function () {

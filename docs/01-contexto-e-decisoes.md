@@ -5,7 +5,7 @@
 - Atua com gestão, eficiência e processos sobre **TOTVS RM** e **TOTVS Protheus**.
 - Segmentos: **Backoffice**, **Imobiliário**, **Educacional**, **RH**.
 - Também atende empresas sem ERP ("gerencio meu negócio em planilha hoje — o que faz sentido para mim agora?").
-- Oferta de entrada: **diagnóstico gratuito de 60 minutos** com um especialista, online, para investigar um problema real do backoffice.
+- Oferta de entrada: **diagnóstico gratuito de 30 minutos** com um especialista, online, para investigar um problema real do backoffice.
 - Canais: WhatsApp (21) 96844-1647 · Instagram @help_nowsolucoes · contato@helpnowsolucoes.com.br.
 - Domínio: helpnowsolucoes.com.br · CNPJ 49.739.083/0001-24.
 

@@ -144,7 +144,7 @@ main section[id] { scroll-margin-top: calc(var(--header-h) + 1px); }
 .nav-toggle svg { width: 22px; height: 22px; }
 .nav-toggle .i-close, .nav-toggle[aria-expanded="true"] .i-open { display: none; }
 .nav-toggle[aria-expanded="true"] .i-close { display: inline; }
-@media (max-width: 1023px) {
+@media (max-width: 1339px) {
   .nav-toggle { display: inline-flex; }
   .nav {
     position: absolute; left: 0; right: 0; top: 100%;
@@ -339,9 +339,6 @@ main section[id] { scroll-margin-top: calc(var(--header-h) + 1px); }
 .footer__col h2 { font-family: var(--font-body); font-size: 15px; font-weight: 800; color: var(--white); margin-bottom: 8px; }
 .footer__col a { color: var(--mist-300); text-decoration: none; overflow-wrap: anywhere; display: flex; align-items: center; min-height: 44px; }
 .footer__col a:hover { color: var(--white); text-decoration: underline; }
-.footer__col a.footer__social { width: 44px; min-height: 44px; justify-content: center; margin-left: -10px; }
-.footer__social svg { width: 24px; height: 24px; }
-.footer__col a.footer__social:hover, .footer__col a.footer__social:focus-visible { color: #2E6BFF; text-decoration: none; }
 .footer__bottom { border-top: 1px solid rgba(255,255,255,.08); }
 .footer__bottom .container { padding-block: 20px 32px; font-size: 13px; color: #8A94AE; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
 .nowrap { white-space: nowrap; }
@@ -642,7 +639,7 @@ main section[id] { scroll-margin-top: calc(var(--header-h) + 1px); }
 .btn--wa:hover { transform: translateY(-1px); }
 .btn--wa-blue:hover, .btn--wa-blue:focus-visible, .btn--wa-blue:active { color: #060D2B; }
 
-/* ---------- Cronômetro "60 minutos" (arco de CARREGAMENTO: enche de 0 a 100 %, no sentido horário) ---------- */
+/* ---------- Cronômetro "30 minutos" (arco de CARREGAMENTO: enche de 0 a 100 %, no sentido horário) ---------- */
 .chrono { display: block; width: 100%; height: auto; overflow: visible; }
 .chrono__fill { stroke-dashoffset: 25; transition: stroke-dashoffset .25s linear, stroke .3s ease; }   /* padrão estático: ~75 % */
 .chrono__tip { transform-origin: 100px 124px; transform: rotate(270deg); transition: transform .25s linear; }
@@ -664,7 +661,7 @@ main section[id] { scroll-margin-top: calc(var(--header-h) + 1px); }
     100% { transform: rotate(360deg); opacity: 0; }
   }
 }
-/* timer do /agendamento: idle = "60" + loop · hold = mm:ss (JS manda no arco) · done = anel cheio + check */
+/* timer do /agendamento: idle = "30" + loop · hold = mm:ss (JS manda no arco) · done = anel cheio + check */
 .chrono .t-hold, .chrono .t-done { display: none; }
 .chrono[data-state="hold"] .t-idle, .chrono[data-state="done"] .t-idle { display: none; }
 .chrono[data-state="hold"] .t-hold, .chrono[data-state="done"] .t-done { display: inline; }
@@ -690,23 +687,6 @@ main section[id] { scroll-margin-top: calc(var(--header-h) + 1px); }
 }
 /* a faixa BRANCA inclinada clarearia o azul sob o texto onde ela alcança a coluna de texto (azul base já está em 4,5:1) */
 @media (max-width: 1099px) { .cta .slant[style*="#FFFFFF"] { display: none; } }
-
-/* ---------- Campanha Universo TOTVS ---------- */
-.campaign {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; max-width: 760px;
-  margin-top: 22px; padding: 12px 16px; border-radius: 14px;
-  background: rgba(61,220,255,.08); border: 1px solid rgba(61,220,255,.35);
-  font-size: 15px; line-height: 1.45; color: var(--white);
-}
-.campaign__icon { display: inline-flex; color: var(--cyan-400); }
-.campaign__icon svg { width: 20px; height: 20px; }
-.campaign__text { flex: 1 1 180px; min-width: 0; }
-.campaign__count {
-  flex: none; font-family: var(--font-mono); font-weight: 500; font-size: 13px; letter-spacing: .04em;
-  padding: 4px 10px; border-radius: 999px; background: var(--cyan-400); color: var(--navy-950);
-}
-.offer .campaign { margin-top: 0; font-size: 14px; }
-@media (max-width: 767px) { .campaign { margin-top: 18px; padding: 10px 12px; font-size: 14px; } }
 
 /* ---------- Carrossel "Na prática": dica visual de que dá para rolar ---------- */
 .flow-dots { display: none; }
@@ -805,3 +785,29 @@ main section[id] { scroll-margin-top: calc(var(--header-h) + 1px); }
 .ag-endnote { margin: 0 0 12px; font-size: 14px; color: var(--ink-600); }
 .confirm__more { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; font-weight: 800; font-size: 15px; color: var(--blue-600); text-decoration: underline; text-underline-offset: 4px; }
 .confirm__more:hover { color: var(--navy-950); }
+
+/* ---------- Instagram em destaque (pill: ícone + @ num só link; borda com o gradiente do Instagram) ---------- */
+.ig-pill {
+  --ig-gradient: linear-gradient(45deg, #FEDA75, #FA7E1E, #D62976, #962FBF, #4F5BD5, #D62976, #FA7E1E);
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px 0 14px;
+  border: 2px solid transparent; border-radius: 999px; color: var(--white); text-decoration: none;
+  font-family: var(--font-body); font-size: 15px; font-weight: 700; letter-spacing: .01em; white-space: nowrap;
+  background: linear-gradient(var(--navy-950), var(--navy-950)) padding-box, var(--ig-gradient) border-box;
+  background-size: 100% 100%, 300% 300%; background-position: 0 0, 0% 50%;
+  box-shadow: 0 0 0 0 rgba(214,41,118,0);
+  transition: transform .2s ease, box-shadow .25s ease;
+}
+.ig-pill svg { width: 22px; height: 22px; flex: none; }
+.ig-pill:hover, .ig-pill:focus-visible { color: var(--white); text-decoration: none; transform: translateY(-2px); box-shadow: 0 8px 22px rgba(214,41,118,.45), 0 0 0 1px rgba(250,126,30,.25); animation: ig-flow 2.4s linear infinite; }
+.ig-pill:hover svg, .ig-pill:focus-visible svg { color: #FEDA75; }
+.ig-pill:active { transform: translateY(0); }
+@keyframes ig-flow { to { background-position: 0 0, 300% 50%; } }
+.site-header .nav a.ig-pill { padding: 0 18px 0 14px; border-bottom: 2px solid transparent; font-size: 15px; color: var(--white); }
+.site-header .nav a.ig-pill:hover { color: var(--white); }
+.footer__col a.ig-pill { align-self: flex-start; margin-top: 4px; color: var(--white); }
+.footer__col a.ig-pill:hover { color: var(--white); text-decoration: none; }
+@media (max-width: 1339px) { .site-header .nav a.ig-pill { align-self: flex-start; margin-top: 12px; } }
+@media (prefers-reduced-motion: reduce) {
+  .ig-pill { transition: none; }
+  .ig-pill:hover, .ig-pill:focus-visible { transform: none; animation: none; }
+}

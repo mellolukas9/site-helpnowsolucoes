@@ -97,7 +97,7 @@ test('END_DATE é inclusivo: se cair num dia útil, esse dia tem horários', () 
 test('getSlots_: semana de 20/12 tem seg–sex, fim de semana vazio; depois de 20/12 tudo vazio', () => {
   const e = env('2026-10-11T10:00:00-03:00');
   const w = JSON.parse(JSON.stringify(e.run("getSlots_('2026-12-14','2026-12-20')")));
-  assert.deepEqual(w.days.map((d) => d.slots.length), [7, 7, 7, 7, 7, 0, 0]);
+  assert.deepEqual(w.days.map((d) => d.slots.length), [14, 14, 14, 14, 14, 0, 0]);
   const after = JSON.parse(JSON.stringify(e.run("getSlots_('2026-12-21','2026-12-27')")));
   assert.ok(after.days.every((d) => d.slots.length === 0));
 });
@@ -105,10 +105,11 @@ test('getSlots_: semana de 20/12 tem seg–sex, fim de semana vazio; depois de 2
 test('getSlots_: abre em max(hoje, START_DATE) e respeita antecedência mínima', () => {
   const e = env('2026-10-11T10:00:00-03:00');
   const r = JSON.parse(JSON.stringify(e.run("getSlots_('2026-10-12','2026-10-16')")));
-  assert.deepEqual(r.days.map((d) => d.slots.length), [0, 0, 0, 7, 7]); // 12–14 antes do START_DATE (15/10)
+  assert.deepEqual(r.days.map((d) => d.slots.length), [0, 0, 0, 14, 14]); // 12–14 antes do START_DATE (15/10)
   const e2 = env('2026-11-30T08:30:00-03:00'); // hoje > START_DATE; 09:00 já está dentro das 2h de antecedência
   const t = JSON.parse(JSON.stringify(e2.run("getSlots_('2026-11-30','2026-11-30')")));
-  assert.deepEqual(t.days[0].slots, ['11:00', '14:00', '15:00', '16:00', '17:00']);
+  // 08:30 + 2h de antecedência = 10:30: o horário das 10:30 ainda entra
+  assert.deepEqual(t.days[0].slots, ['10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30']);
 });
 
 /* ------------------------------ Feriados ------------------------------ */
@@ -124,7 +125,7 @@ test('Feriados: 02/11 (Finados) e 20/11 (Consciência Negra) bloqueados; 15/11 �
   assert.equal(e.run("isCandidate_('2026-11-03','09:00')"), true);
   const w = JSON.parse(JSON.stringify(e.run("getSlots_('2026-11-02','2026-11-06')")));
   assert.equal(w.days[0].slots.length, 0);
-  assert.equal(w.days[1].slots.length, 7);
+  assert.equal(w.days[1].slots.length, 14);
 });
 
 test('Feriados: agenda "Feriados no Brasil" também bloqueia (e ignora "facultativo")', () => {
@@ -139,7 +140,9 @@ test('Feriados: agenda "Feriados no Brasil" também bloqueia (e ignora "facultat
 
 test('Regras mantidas: almoço 12–14h fora e sem fim de semana', () => {
   const e = env('2026-10-11T10:00:00-03:00');
-  assert.deepEqual(JSON.parse(JSON.stringify(e.run('CONFIG.SLOT_HOURS'))), [9, 10, 11, 14, 15, 16, 17]);
+  assert.equal(e.run('CONFIG.SLOT_MINUTES'), 30);
+  assert.equal(e.run("isCandidate_('2026-10-20','12:30')"), false);
+  assert.equal(e.run("isCandidate_('2026-10-20','13:30')"), false);
   assert.equal(e.run("isCandidate_('2026-10-20','12:00')"), false);
   assert.equal(e.run("isCandidate_('2026-10-20','13:00')"), false);
   assert.equal(e.run("isCandidate_('2026-10-24','10:00')"), false); // sábado
@@ -238,4 +241,92 @@ test('book_: data depois de 20/12 → SLOT_TAKEN (sem evento)', () => {
   const res = JSON.parse(JSON.stringify(e.run(`book_(${JSON.stringify(BOOK({ date: '2026-12-21' }))})`)));
   assert.equal(res.code, 'SLOT_TAKEN');
   assert.equal(e.log.inserts.length, 0);
+});
+
+/* ------------------------------ Diagnóstico de 30 minutos ------------------------------ */
+test('slotTimes_: 14 horários a cada 30 min; último início 11:30 e 17:30', () => {
+  const e = env('2026-10-11T10:00:00-03:00');
+  const t = JSON.parse(JSON.stringify(e.run('slotTimes_()')));
+  assert.deepEqual(t, ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30']);
+});
+
+test('isCandidate_: aceita :30 dentro das janelas; recusa 12:00, 12:30, 17:45, 18:00 e formatos fora do passo', () => {
+  const e = env('2026-10-11T10:00:00-03:00');
+  ['09:30', '11:30', '14:30', '17:30'].forEach((t) => assert.equal(e.run(`isCandidate_('2026-10-20','${t}')`), true, t));
+  ['08:30', '12:00', '12:30', '17:45', '18:00', '09:15', '9:30', '09:30:00', ''].forEach((t) => assert.equal(e.run(`isCandidate_('2026-10-20','${t}')`), false, t));
+});
+
+test('getSlots_: ocupação de 30 min tira só aquele horário', () => {
+  const e = env('2026-10-11T10:00:00-03:00');
+  // ocupado 10:00–10:30 (BRT = 13:00–13:30Z): some só o horário das 10:00
+  e.run("Calendar.Freebusy.query = () => ({ calendars: { primary: { busy: [{ start: '2026-10-20T13:00:00Z', end: '2026-10-20T13:30:00Z' }] } } })");
+  const r = JSON.parse(JSON.stringify(e.run("getSlots_('2026-10-20','2026-10-20')")));
+  assert.equal(r.days[0].slots.length, 13);
+  assert.ok(!r.days[0].slots.includes('10:00'));
+  assert.ok(r.days[0].slots.includes('09:30') && r.days[0].slots.includes('10:30'));
+});
+
+test('hold_/release_: reserva de :30 funciona e é independente do horário cheio', () => {
+  const e = env('2026-10-11T10:00:00-03:00');
+  const a = 'aaaaaaaaaaaaaaaa1111', b = 'bbbbbbbbbbbbbbbb2222';
+  const hold = (id, time) => JSON.parse(JSON.stringify(e.run(`hold_({ date: '2026-10-20', time: '${time}', holdId: '${id}' })`)));
+  assert.equal(hold(a, '10:30').ok, true);
+  assert.equal(hold(b, '10:30').code, 'SLOT_TAKEN');
+  assert.equal(hold(b, '10:00').ok, true); // 10:00 e 10:30 não se sobrepõem
+  assert.equal(hold(a, '12:30').code, 'VALIDATION'); // fora da janela
+  assert.equal(hold(a, '10:15').code, 'VALIDATION');
+  const slots = JSON.parse(JSON.stringify(e.run(`getSlots_('2026-10-20','2026-10-20','${b}')`)));
+  assert.ok(!slots.days[0].slots.includes('10:30') && slots.days[0].slots.includes('10:00'));
+  e.run(`release_({ date: '2026-10-20', time: '10:30', holdId: '${a}' })`);
+  assert.equal(hold(b, '10:30').ok, true);
+});
+
+test('book_: horário :30 cria evento de 30 min, rótulo e e-mails com 30 minutos', () => {
+  const e = env('2026-10-11T10:00:00-03:00', []);
+  const res = JSON.parse(JSON.stringify(e.run(`book_(${JSON.stringify(BOOK({ time: '10:30' }))})`)));
+  assert.equal(res.ok, true);
+  const ev = e.log.inserts[0];
+  assert.equal(ev.start.dateTime, '2026-10-20T10:30:00-03:00');
+  assert.equal(ev.end.dateTime, '2026-10-20T11:00:00-03:00');
+  assert.ok(ev.description.includes('30 minutos') && !ev.description.includes('60'));
+  assert.equal(new Date(res.end).getTime() - new Date(res.start).getTime(), 30 * 60000);
+  assert.equal(e.log.appended[0][2], '10:30');
+  const mails = e.log.mails.map((m) => m.subject + m.htmlBody).join('\n');
+  assert.ok(mails.includes('das 10:30 às 11:00'));
+  assert.ok(mails.includes('30 minutos') && mails.includes('30 MIN'));
+  assert.ok(!/60 min|uma hora|1 hora/i.test(mails));
+});
+
+test('book_: 17:30 termina às 18:00; 12:00 e 18:00 são recusados', () => {
+  const e = env('2026-10-11T10:00:00-03:00', []);
+  const ok = JSON.parse(JSON.stringify(e.run(`book_(${JSON.stringify(BOOK({ time: '17:30' }))})`)));
+  assert.equal(ok.ok, true);
+  assert.equal(e.log.inserts[0].end.dateTime, '2026-10-20T18:00:00-03:00');
+  ['12:00', '18:00'].forEach((time, i) => {
+    const r = JSON.parse(JSON.stringify(e.run(`book_(${JSON.stringify(BOOK({ time, email: 'x' + i + '@acme.com.br', whatsapp: '(21) 9000' + i + '-0000' }))})`)));
+    assert.equal(r.code, 'VALIDATION', time);
+  });
+  assert.equal(e.log.inserts.length, 1);
+});
+
+test('book_: ocupação só na meia hora seguinte não bloqueia o horário anterior', () => {
+  const busy = "Calendar.Freebusy.query = () => ({ calendars: { primary: { busy: [{ start: '2026-10-20T13:30:00Z', end: '2026-10-20T14:00:00Z' }] } } })";
+  const e = env('2026-10-11T10:00:00-03:00', []);
+  e.run(busy);
+  assert.equal(JSON.parse(JSON.stringify(e.run(`book_(${JSON.stringify(BOOK({ time: '10:00' }))})`))).ok, true);
+  const e2 = env('2026-10-11T10:00:00-03:00', []);
+  e2.run(busy);
+  assert.equal(JSON.parse(JSON.stringify(e2.run(`book_(${JSON.stringify(BOOK({ time: '10:30' }))})`))).code, 'SLOT_TAKEN');
+});
+
+test('sendReminders: reserva :30 recebe lembrete ~24h antes com intervalo de 30 min', () => {
+  const row = new Array(16).fill('');
+  row[1] = '2026-10-21'; row[2] = '10:30'; row[3] = 'Maria Silva'; row[6] = 'maria@acme.com.br';
+  row[12] = 'ev1'; row[13] = 'https://meet.google.com/x'; row[14] = 'Agendado';
+  const e = env('2026-10-20T10:30:00-03:00', [row]);
+  e.run("Calendar.Events.get = () => ({ status: 'confirmed', attendees: [] })");
+  e.run('sheet_ = function () { return { getDataRange: () => ({ getValues: () => [["h"]].concat(' + JSON.stringify([row]) + ') }), getRange: () => ({ setValue() {} }) }; }');
+  e.run('sendReminders()');
+  assert.equal(e.log.mails.length, 1);
+  assert.ok(e.log.mails[0].htmlBody.includes('das 10:30 às 11:00'));
 });
