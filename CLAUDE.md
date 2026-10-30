@@ -24,7 +24,7 @@ public_html/                 → conteúdo do public_html da HostGator
   agendamento.html           /agendamento (URL limpa via .htaccess)
   politica-de-privacidade.html, 404.html
   assets/css/styles.css      Todos os estilos (tokens no :root)
-  assets/js/main.js          Interações da home (menu, tabs "Na prática" e "Seu momento")
+  assets/js/main.js          Interações da home (menu, tabs "Seu momento", cronômetro, WhatsApp flutuante)
   assets/js/agendamento.js   Fluxo de 3 passos + cliente da API + modo ?mock=1
   assets/img/                logo-dark.svg, logo-light.svg (og-image.png pendente)
   api/agenda.php             Proxy PHP (rate limit, validação, chamada ao Apps Script; MOCK sem config)
@@ -69,6 +69,7 @@ php -S localhost:8000 -t public_html tools/dev-router.php
 - [x] Rodada 4 (11/10): arco do cronômetro vira barra de carregamento (enche 0→100 %; laranja nos últimos 30 s); CTA da home com o relógio INTEIRO em 2 colunas (mobile: acima do título); /agendamento cabe na tela em desktop (sem WhatsApp, logo 44/24); animação de entrada sem opacidade (Lighthouse desktop 100); `?v=7`.
 - [x] Rodada 3 (11/10): relógio gigante no CTA da home; cronômetro do /agendamento vira timer real da reserva (**3 min**, aviso aos 30 s); campanha sem "estande" (opção A); card 02 com urgência; "Fale conosco" em #25D366/navy; `?v=6`.
 - [x] Rodada 7 (11/10, só no GitHub Pages para aprovação do cliente): texto novo da campanha e contador desligado (`CAMPAIGN_COUNTER = false`), agenda até 20/12/2026 (`CONFIG.END_DATE`), 1 agendamento por e-mail/WhatsApp (`DUPLICATE` → 409), hero mais curto, link pós-agendamento. `?v=10`. Testes do Code.gs: `node --test tests/code-gs.test.js`. **Code.gs mudou: republicar junto com o upload na HostGator, só após a aprovação.**
+- [x] Rodada 9 (30/10): **home v2** (branch `site-v2`, só prévia em `previa.artemisys.com.br/helpnow/`, sem deploy em produção). Posicionamento de gestão estratégica + Reforma Tributária; nova ordem: hero, Reforma, Como trabalhamos (4 passos), Passo 01 reunião, Passo 02 Seu momento, Passo 03 Especialistas, Passo 04 Acompanhamento, Quem conduz, Para quem, Integração e IA, CTA. Removidos "Na prática", jornada do hero e Segmentos. Estilos inline da referência viraram classes (bloco "Rodada 9" do CSS). `?v=14`. Backup: tag `site-v1-2026-10-30` + `dist/backup-site-v1-2026-10-30.zip`. Prévia: `tools/publicar-previa.sh` (ver `docs/04-deploy-e-ambiente.md`). Referência: `docs/design/home-v2-design.html`. Pendências: aprovação do Estevão, foto e grafia do nome, confirmação dos 3 projetos, backup da HostGator.
 - [ ] **Republicar o `Code.gs`** no Apps Script — OBRIGATÓRIO agora (`HOLD_SECONDS` virou 180): `hold`, `release` e `stats` só existem na versão nova (sem isso o site segue funcionando, mas sem reserva e sem contador). Ver `docs/05-backlog.md`.
 - [ ] Upload (`dist/public_html.zip` + `helpnow-config.php` em `/home/este7243/`), teste ponta a ponta em produção, DKIM e mensagem de saudação do WhatsApp (ver `docs/05-backlog.md`).
 - [ ] Pendências em `docs/05-backlog.md`.

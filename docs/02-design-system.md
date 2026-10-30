@@ -17,8 +17,10 @@ O design foi aprovado em canvas (versão v3). Refinar execução é bem-vindo; m
 | `--ink-600` | `#2B3757` | texto secundário no claro |
 | `--mist-300` | `#C9D2E6` | texto secundário no escuro |
 | `--line` | `#DCE2EF` | bordas no claro |
+| `--blue-50` | `#EAF0FF` | fundo das tags (`.spec__tag`) sobre branco |
+| `--navy-line` | `#1E2A5A` | borda do cartão do diagrama sobre navy |
 
-Ritmo das seções (alternância forte de contraste): hero navy → Reforma **ciano** → Na prática cinza-claro → Seu momento navy → Segmentos branco → CTA **azul** → footer navy.
+Ritmo das seções (alternância forte de contraste), home v2: hero navy → Reforma **ciano** → Como trabalhamos branco → Passo 01 cinza → Passo 02 (Seu momento) navy → Passo 03 (Especialistas) branco → Passo 04 cinza → Quem conduz branco → Para quem cinza → Integração e IA navy → CTA **azul** → footer navy.
 
 ## Tipografia
 - Fontes hospedadas em `assets/fonts/*.woff2` (subset latino, variáveis); `@font-face` no topo do `styles.css`.
@@ -35,13 +37,29 @@ Ritmo das seções (alternância forte de contraste): hero navy → Reforma **ci
 
 ## Motivos gráficos
 - **Faixas inclinadas** (`.slant`, `skewX(-9deg)`), herdadas das hastes do H, em baixa opacidade no hero, "Seu momento" e CTA.
-- **Marquinha inclinada** (40×8px, `skewX(-20deg)`) no topo dos cards de segmento.
-- **Números com contorno** (`-webkit-text-stroke`) nos passos da jornada; o passo 02 (diagnóstico) é sempre o card azul cheio.
+- **Marquinha inclinada** (40×8px, `skewX(-20deg)`) no topo dos cards "Para quem".
+- **Passos numerados** em círculo (`.step__n`); o 01 (diagnóstico) é sempre o preenchido em azul.
 
 ## Componentes
 - Botões: `.btn--primary` (azul), `.btn--dark` (navy), `.btn--ghost-light`, `.btn--outline-white`, `.btn--outline`. Altura ≥ 48px (`--sm` 44px).
-- Tabs acessíveis (setas do teclado): toggle "Na prática" e cards de "Seu momento" — `main.js`.
+- Tabs acessíveis (setas do teclado): cards de "Seu momento" — `main.js`.
 - Agendamento: stepper, grade de 5 dias úteis por semana, slots "09:00 – 10:00", skeletons, alertas, formulário com labels reais.
+
+### Componentes da home v2 (rodada 9)
+Todos em `styles.css`, bloco "Rodada 9"; nada de estilo inline, exceto as faixas inclinadas (`.slant`), como já era.
+- **Seção:** `.sec` + `.sec--white | --gray | --navy` (respiro `--section-y`). `.split` / `.split__main` / `.split__aside` = duas colunas que empilham sozinhas.
+- **Rótulos e links:** `.eyebrow` (mono pequeno; `--mist` no escuro), `.link-arrow` (link com seta, alvo ≥ 44px), `.card` (cartão branco).
+- **Linha do tempo "Como trabalhamos":** `ol.steps > li.step` com `.step__n` (círculo numerado; `.step--first` preenchido). ≥ 900px: 4 colunas com a régua azul no topo. < 900px: lista vertical com a régua na esquerda.
+- **Reunião (Passo 01):** `.agenda` / `.agenda__row` / `.agenda__time`.
+- **Seu momento (Passo 02):** `.pillars` / `.pillar` (3 frentes, 1 coluna < 900px) + `.stages` / `.stage` / `.stage-panel` (abas, `main.js`).
+- **Especialistas (Passo 03):** `.specs` / `.spec` (`h3` + `p` + `.spec__tag` ou `.link-arrow`); a última linha é cinza.
+- **Acompanhamento (Passo 04):** `.phases` / `.phase` com `.phase__bar` (`--fill` via `--60`, `--25`) e o aviso `.followup` (borda ciano).
+- **Quem conduz:** `.person` (navy; `.person__avatar` com iniciais, `.stats` em `dl`) + `.projects` / `.project`.
+- **Para quem:** `.segs.segs--duo` com `.seg--navy` e `.seg--blue`.
+- **Integração e IA:** `.points` (lista numerada) + `.diagram`. O SVG é só para ≥ 640px; abaixo disso entra `.diagram__list` (hub + lista de sistemas), porque o texto do SVG ficaria com ~7px.
+- **CTA:** `.cta__note` (link para o Diagnóstico de impacto).
+- Menu com 5 links + botão: abaixo de 1180px a fonte/gap diminuem; < 1024px vira hambúrguer.
+- Removidos: `.journey`/`.jcard`, `.processo`/`.flow`/`.fcard`/`.toggle`/`.result`, `.segmentos__head`.
 
 ## Regras
 - Contraste AA; foco visível (contorno ciano); `prefers-reduced-motion` respeitado.

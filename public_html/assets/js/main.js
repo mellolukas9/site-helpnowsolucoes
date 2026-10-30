@@ -84,8 +84,6 @@
     var scheduleCheck = function () { if (!checking) { checking = true; window.requestAnimationFrame(checkCover); } };
     window.addEventListener('scroll', scheduleCheck, { passive: true });
     window.addEventListener('resize', scheduleCheck);
-    // o carrossel do "Na prática" rola na horizontal e muda o que está sob o botão
-    document.addEventListener('scroll', scheduleCheck, { passive: true, capture: true });
     scheduleCheck();
   }
 
@@ -126,52 +124,20 @@
     }
   }
 
-  /* ---------- "Na prática": pontos + fade do carrossel (só aparecem no mobile, via CSS) ---------- */
-  var flow = document.querySelector('.flow');
-  var dotsBox = document.querySelector('.flow-dots');
-  if (flow && dotsBox) {
-    var cards = flow.querySelectorAll('.fcard');
-    Array.prototype.forEach.call(cards, function () { dotsBox.appendChild(document.createElement('i')); });
-    var dots = dotsBox.children;
-    var syncFlow = function () {
-      var max = flow.scrollWidth - flow.clientWidth;
-      flow.classList.toggle('is-end', flow.scrollLeft >= max - 4);
-      var idx = 0, best = Infinity, left = flow.getBoundingClientRect().left;
-      Array.prototype.forEach.call(cards, function (c, i) {
-        var d = Math.abs(c.getBoundingClientRect().left - left - 18);
-        if (d < best) { best = d; idx = i; }
-      });
-      if (flow.scrollLeft >= max - 4) idx = cards.length - 1;
-      Array.prototype.forEach.call(dots, function (d, i) { d.classList.toggle('is-active', i === idx); });
-    };
-    flow.addEventListener('scroll', function () { window.requestAnimationFrame(syncFlow); }, { passive: true });
-    window.addEventListener('resize', syncFlow);
-    syncFlow();
-  }
-
-  /* ---------- "Na prática": Como é hoje × Com a HelpNow ---------- */
-  var processo = document.getElementById('processo');
-  if (processo) {
-    var ptabs = Array.prototype.slice.call(processo.querySelectorAll('.toggle [role="tab"]'));
-    wireTablist(ptabs, function (_i, tab) {
-      processo.classList.toggle('is-help', tab.getAttribute('data-view') === 'help');
-    });
-  }
-
   /* ---------- "Seu momento" ---------- */
   var MOMENTOS = [
-    { tag: 'AINDA SEM ERP', title: 'Estruturamos antes de informatizar.',
-      body: 'Antes de pensar em sistema, organizamos o que já existe: processos, cadastros e regras. Você descobre o que faz sentido agora — inclusive se ainda não é hora de um ERP.',
-      items: ['Mapa dos processos atuais', 'Planilhas padronizadas e confiáveis enquanto isso', 'Roteiro de quando e como adotar um ERP'] },
+    { tag: 'AINDA SEM SISTEMA', title: 'Estruturamos antes de informatizar.',
+      body: 'Antes de pensar em sistema, organizamos o que já existe: processos, cadastros e regras. Você descobre o que faz sentido agora, inclusive se ainda não é hora de um ERP.',
+      items: ['Mapa dos processos atuais', 'Planilhas padronizadas e confiáveis enquanto isso', 'Roteiro de quando e como adotar um sistema'] },
     { tag: 'ESCOLHA E IMPLANTAÇÃO', title: 'Implantação aderente ao seu negócio.',
-      body: 'Apoiamos a escolha entre RM e Protheus e acompanhamos a implantação para que o sistema reflita a sua operação desde o primeiro dia.',
+      body: 'Apoiamos a escolha do sistema certo para o seu negócio e acompanhamos a implantação para que o sistema reflita a sua operação desde o primeiro dia.',
       items: ['Levantamento de requisitos por área', 'Parametrização orientada ao processo', 'Treinamento da equipe na virada'] },
-    { tag: 'OTIMIZAÇÃO', title: 'Seu TOTVS entregando o que prometeu.',
+    { tag: 'OTIMIZAÇÃO', title: 'Seu sistema entregando o que prometeu.',
       body: 'Revisamos parametrização, rotinas e relatórios para eliminar retrabalho, planilhas paralelas e gargalos no fechamento.',
-      items: ['Diagnóstico dos gargalos por módulo', 'Ajustes de parametrização e rotinas', 'Relatórios gerenciais direto do ERP'] },
-    { tag: 'SUSTENTAÇÃO', title: 'Um time TOTVS sem precisar contratar um.',
-      body: 'Suporte especializado e melhoria contínua para a operação não parar — e evoluir junto com o seu negócio, incluindo a Reforma Tributária.',
-      items: ['Atendimento direto com especialista', 'Melhoria contínua com indicadores', 'Adequação às mudanças legais'] }
+      items: ['Diagnóstico dos gargalos por módulo', 'Ajustes de parametrização e rotinas', 'Relatórios gerenciais direto do sistema'] },
+    { tag: 'CRESCIMENTO SEM CONTROLE', title: 'Colocamos ordem para crescer com controle.',
+      body: 'Quando a empresa cresce mais rápido que os processos, os números deixam de fechar e tudo passa pelo dono. Mapeamos onde a operação trava, definimos indicadores e criamos uma rotina de gestão que o time conduz.',
+      items: ['Mapa dos gargalos entre áreas', 'Indicadores e metas por área', 'Rotina de acompanhamento até o time andar sozinho'] }
   ];
   var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
 

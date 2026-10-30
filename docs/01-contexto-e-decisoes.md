@@ -35,3 +35,18 @@
 | Planilha no Drive do comercial@ em vez de MySQL | Mais rápido para o lançamento; MySQL na fase 2 |
 | "Como nos encontrou?": Universo TOTVS (1º), LinkedIn, Instagram, Google | Pedido do cliente |
 | Regras: seg–sex, 9h–12h e 14h–18h, 1h, sem intervalo, feriados bloqueados, lembrete 24h antes | Pedido do cliente |
+
+## Posicionamento v2 (30/10/2026)
+Autorizado pelo cliente (Estevão) para a home; referência aprovada em `docs/design/home-v2-design.html`.
+- **Mudança de foco:** de "consultoria de TOTVS RM/Protheus" para **consultoria de gestão estratégica**: organizar processos, preparar a empresa para a **Reforma Tributária** e crescer com controle. Pill do hero: "GESTÃO ESTRATÉGICA · PROCESSOS · REFORMA TRIBUTÁRIA".
+- **TOTVS vira especialidade**, não o centro: aparece só em "Especialistas" (TOTVS RM, TOTVS Protheus) e no aviso de marca do rodapé. "Seu momento" fala em "sistema".
+- **Jornada em 4 passos** (substitui a jornada do hero e a seção "Na prática"): 01 Reunião de diagnóstico · 02 Seu momento (Estratégia, Gestão, Processos) · 03 Especialistas (gerentes de projetos por sistema) · 04 Acompanhamento ("Ficamos com você até sua operação andar sozinha").
+- **Reforma Tributária** com oferta própria: "Diagnóstico de impacto" (CTA com mensagem de WhatsApp específica), voltada a médias e grandes empresas.
+- **Quem conduz:** Estevão Sant Anna (iniciais "ES" no lugar da foto, que vem depois), 3 números (2017, 15+, 28) e 3 projetos **sem nome de cliente**. A grafia do nome ainda é a confirmar: está em um único ponto do `index.html` (`.person__name`, mais o `alt` previsto no comentário da foto).
+- **Para quem:** dois públicos (médias e grandes · negócios locais) no lugar da seção Segmentos (Backoffice/Imobiliário/Educacional/RH).
+- **Integração e IA:** nova seção com diagrama (hub "Seu processo").
+- **Regras de conteúdo:** não citar a Artemisys; não falar em plano mensal/mensalidade (o acompanhamento é "seguimos por perto"); nomes de clientes dos projetos não aparecem.
+- **CTAs:** todos os de agendar vão ao WhatsApp (decisão da rodada 8); os da Reforma usam a mensagem "Quero o Diagnóstico de impacto da Reforma Tributária". O `/agendamento` segue existindo, sem link na home.
+- **Rodapé e menu:** Reforma Tributária · Como trabalhamos · Especialistas · Quem somos · Integração e IA (o rodapé acrescenta "Para quem").
+- Seção "Na prática" (Procure-to-Pay, Hoje × HelpNow) removida junto com o código das abas dela.
+

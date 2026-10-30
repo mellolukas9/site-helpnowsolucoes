@@ -12,3 +12,6 @@ _site/
 
 # Capturas do Playwright
 .playwright-mcp/
+
+# screenshots de validação (não versionar)
+docs/design/*.png

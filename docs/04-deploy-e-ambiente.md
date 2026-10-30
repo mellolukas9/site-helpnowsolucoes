@@ -25,3 +25,19 @@ Página de agendamento nativa do Google Agenda (Criar → Agendamento de horári
 | 502 UPSTREAM | `/home/USUARIO/helpnow-agenda.log`; URL `/exec`, acesso "Qualquer pessoa", secret igual |
 | E-mail parou | MX e Roteamento de e-mail remoto |
 | Sem link do Meet | Serviço avançado Calendar adicionado + nova versão publicada |
+
+## Prévia para aprovação
+Para o cliente aprovar mudanças **antes** de ir para a HostGator, a prévia fica em `https://previa.artemisys.com.br/helpnow/` (GitHub Pages do repositório `mellolukas9/previas`; domínio próprio e HTTPS já configurados). Não altera nada da produção.
+
+- **Como publicar:** `bash tools/publicar-previa.sh` (padrão: slug `helpnow`, projeto `site-helpnowsolucoes`). O script:
+  1. roda `tools/build-pages-demo.sh /helpnow <tmp>` (prefixa caminhos, URLs limpas viram pastas, `/agendamento` em **mock**: nada é gravado nem enviado; remove `api/`, `.htaccess` e `sitemap.xml`; `noindex` + `robots.txt`) e confere CSS, fontes, agendamento, política e noindex;
+  2. clona (ou atualiza) `previas` numa pasta temporária fora do projeto;
+  3. lê `helpnow/.origem`: se a pasta existir e **não** for deste projeto, **para** (pode ser prévia de um lead do motor);
+  4. substitui `helpnow/`, grava `.origem` (`site-helpnowsolucoes AAAA-MM-DD`) e faz o commit `previa: helpnow (site-helpnowsolucoes)`, garantindo que só `helpnow/` mudou;
+  5. **pausa** mostrando arquivos, tamanho e `git status` da raiz, e espera o ok (`s`);
+  6. dá o push (se rejeitado: `pull --rebase` e tenta de novo, nunca force), espera o Pages e confere HTTP 200 em `/helpnow/`, `/agendamento/` e `/politica-de-privacidade/`.
+- **Não pode ser alterado** na raiz do `previas`: `CNAME`, `.nojekyll`, `robots.txt`, `index.html` e as pastas de outros projetos/Motor Comercial. O `robots.txt` e o `.nojekyll` gerados pelo build ficam **dentro** de `helpnow/`.
+- **Manter no ar:** o motor apaga prévias com mais de 30 dias sem atualização; basta publicar de novo.
+- **Tirar do ar:** apagar a pasta `helpnow/` no clone, commit e push (com o ok do responsável).
+- O workflow `pages.yml` deste repositório (demo em `/site-helpnowsolucoes`) continua usando o mesmo `build-pages-demo.sh`, com o prefixo dele.
+- O site não tem Analytics nem pixel (conferido com `grep`).
