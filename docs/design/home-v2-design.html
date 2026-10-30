@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HelpNow · Home v2 (referência de design)</title>
+<!-- REFERÊNCIA DE DESIGN aprovada em 30/10/2026. Não é a página final:
+     os estilos inline daqui devem virar classes em assets/css/styles.css.
+     Abrir com: php -S localhost:8000 -t public_html tools/dev-router.php  e copiar este arquivo para public_html/ só para comparar. -->
+<link rel="stylesheet" href="/assets/css/styles.css">
+<style>body{margin:0} a{color:inherit}</style>
+</head>
+<body>
+<div style="background: #FFFFFF;">
+
+<header class="site-header" id="topo-header">
+<div class="container">
+<a class="brand" href="#conteudo">
+<svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="66,104 84,104 98,16 80,16" fill="#E6EBF5"></polygon><path d="M38,76 Q66,56 102,52" fill="none" stroke="#060D2B" stroke-width="25" stroke-linecap="round"></path><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#060D2B" stroke="#060D2B" stroke-width="11" stroke-linejoin="round"></polygon><polygon points="26,104 44,104 58,16 40,16" fill="#2E6BFF"></polygon><path d="M38,76 Q66,56 102,52" fill="none" stroke="#2E6BFF" stroke-width="13" stroke-linecap="round"></path><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#2E6BFF" stroke="#2E6BFF" stroke-width="2" stroke-linejoin="round"></polygon></svg>
+<span class="wordmark">HELP<span>NOW</span></span>
+</a>
+<nav class="nav" id="nav-principal" aria-label="Principal">
+<a href="#reforma">Reforma Tributária</a>
+<a href="#como">Como trabalhamos</a>
+<a href="#especialistas">Especialistas</a>
+<a href="#quem-somos">Quem somos</a>
+<a href="#integracao">Integração e IA</a>
+<a class="btn btn--primary btn--sm" href="#agendar">Agendar diagnóstico
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg></a>
+</nav>
+</div>
+</header>
+
+<main id="conteudo">
+
+<section class="hero has-slants" aria-labelledby="hero-title">
+<div class="slant" style="right:6%; background:#2E6BFF; opacity:.16" aria-hidden="true"></div>
+<div class="slant" style="right:-2%; background:#E6EBF5; opacity:.07" aria-hidden="true"></div>
+<div class="hero__glow" aria-hidden="true"></div>
+<div class="container">
+<span class="pill">GESTÃO ESTRATÉGICA · PROCESSOS · REFORMA TRIBUTÁRIA</span>
+<h1 id="hero-title">A gestão do seu negócio, organizada <span class="text-blue">passo a passo.</span></h1>
+<p class="hero__lead">Consultoria de gestão estratégica para empresas que precisam organizar processos, se preparar para a Reforma Tributária e crescer com controle.</p>
+<div class="hero__ctas">
+<a class="btn btn--primary btn--lg btn--glow" href="#agendar">Garantir meu diagnóstico gratuito
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+<a class="btn btn--ghost-light btn--lg" href="#como">Como trabalhamos</a>
+</div>
+</div>
+</section>
+
+<section class="reforma" id="reforma" aria-labelledby="reforma-title">
+<div class="container">
+<div class="reforma__text">
+<span class="reforma__tag">NOVIDADE · REFORMA TRIBUTÁRIA</span>
+<h2 id="reforma-title">A Reforma Tributária vai mudar os seus processos. Sua empresa está preparada?</h2>
+<p>Os tributaristas explicam a lei e o sistema recebe a atualização. Mas é o seu time que vai emitir nota, precificar, apurar e fechar o mês com as novas regras de CBS e IBS. O Diagnóstico de impacto mapeia o que muda em cada área e entrega o plano de adequação.</p>
+<a class="btn btn--dark" href="#agendar">Quero o Diagnóstico de impacto
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+</div>
+<ol class="milestones" aria-label="O que muda em cada área">
+<li class="ms ms--dark"><strong>Fiscal</strong><span>Novas regras de cálculo, destaque e apuração de CBS e IBS.</span></li>
+<li class="ms"><strong>Faturamento</strong><span>Notas fiscais com novos campos e validações.</span></li>
+<li class="ms"><strong>Financeiro</strong><span>Impacto em preços, créditos e fluxo de caixa.</span></li>
+<li class="ms"><strong>Compras</strong><span>Crédito do imposto passa a pesar na escolha de fornecedores.</span></li>
+</ol>
+</div>
+</section>
+
+<section id="como" style="background: #FFFFFF;">
+<div class="container" style="padding-block: 88px;">
+<span class="kicker">COMO TRABALHAMOS</span>
+<h2 class="h-section">Do primeiro contato à operação rodando sozinha, em quatro passos.</h2>
+<ol style="list-style: none; margin: 48px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;">
+<li style="padding: 0 24px 0 0; border-top: 3px solid #2E6BFF;">
+<p style="margin: -22px 0 0; width: 40px; height: 40px; border-radius: 50%; background: #2E6BFF; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; font-size: 15px; display: flex; align-items: center; justify-content: center;">01</p>
+<h3 style="margin: 18px 0 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 21px; color: #0A1433;">Reunião de diagnóstico</h3>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">30 minutos para entender o seu negócio e o problema real.</p>
+<a href="#passo-1" style="display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 700; color: #2456F0;">Ver detalhes →</a>
+</li>
+<li style="padding: 0 24px 0 0; border-top: 3px solid #2E6BFF;">
+<p style="margin: -22px 0 0; width: 40px; height: 40px; border-radius: 50%; background: #FFFFFF; border: 3px solid #2E6BFF; color: #2456F0; font-family: 'JetBrains Mono', monospace; font-size: 15px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">02</p>
+<h3 style="margin: 18px 0 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 21px; color: #0A1433;">Seu momento</h3>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">Identificamos se o que destrava o faturamento é estratégia, gestão ou processo.</p>
+<a href="#passo-2" style="display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 700; color: #2456F0;">Ver detalhes →</a>
+</li>
+<li style="padding: 0 24px 0 0; border-top: 3px solid #2E6BFF;">
+<p style="margin: -22px 0 0; width: 40px; height: 40px; border-radius: 50%; background: #FFFFFF; border: 3px solid #2E6BFF; color: #2456F0; font-family: 'JetBrains Mono', monospace; font-size: 15px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">03</p>
+<h3 style="margin: 18px 0 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 21px; color: #0A1433;">Especialistas no projeto</h3>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">Gerentes de projetos que conhecem o seu sistema conduzem a execução.</p>
+<a href="#especialistas" style="display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 700; color: #2456F0;">Ver detalhes →</a>
+</li>
+<li style="padding: 0 24px 0 0; border-top: 3px solid #2E6BFF;">
+<p style="margin: -22px 0 0; width: 40px; height: 40px; border-radius: 50%; background: #FFFFFF; border: 3px solid #2E6BFF; color: #2456F0; font-family: 'JetBrains Mono', monospace; font-size: 15px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">04</p>
+<h3 style="margin: 18px 0 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 21px; color: #0A1433;">Ficamos até andar sozinha</h3>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">Acompanhamos indicadores e rotina até o seu time conduzir sem a gente.</p>
+<a href="#passo-4" style="display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 700; color: #2456F0;">Ver detalhes →</a>
+</li>
+</ol>
+</div>
+</section>
+
+
+<section id="passo-1" style="background: #F2F4FA;">
+<div class="container" style="padding-block: 96px; display: flex; flex-wrap: wrap; gap: 56px; align-items: center;">
+<div style="flex: 999 1 480px; min-width: 0;">
+<span class="kicker">PASSO 01 · REUNIÃO DE DIAGNÓSTICO</span>
+<h2 class="h-section">Tudo começa com uma conversa de 30 minutos.</h2>
+<p class="lead">Você traz um problema real do dia a dia. A gente olha para números, processos e pessoas e devolve um diagnóstico claro, sem custo e sem compromisso.</p>
+<a class="btn btn--primary" href="#agendar" style="margin-top: 24px;">Agendar minha reunião
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+</div>
+<div style="flex: 1 1 400px; min-width: 0; background: #FFFFFF; border: 1px solid #DCE2EF; border-radius: 20px; padding: 30px;">
+<p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.1em; color: #2456F0;">COMO É A REUNIÃO</p>
+<div style="margin-top: 18px; display: flex; flex-direction: column;">
+<div style="display: flex; gap: 18px; padding: 16px 0; border-bottom: 1px solid #DCE2EF;"><p style="margin: 0; width: 76px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #0A1433;">0–10 min</p><p style="margin: 0; font-size: 15px; line-height: 1.5; color: #2B3757;"><b style="color: #0A1433;">Seu negócio.</b> Como a empresa funciona hoje e onde dói.</p></div>
+<div style="display: flex; gap: 18px; padding: 16px 0; border-bottom: 1px solid #DCE2EF;"><p style="margin: 0; width: 76px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #0A1433;">10–25 min</p><p style="margin: 0; font-size: 15px; line-height: 1.5; color: #2B3757;"><b style="color: #0A1433;">O gargalo.</b> Investigamos o problema que você trouxe.</p></div>
+<div style="display: flex; gap: 18px; padding: 16px 0;"><p style="margin: 0; width: 76px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #2456F0;">25–30 min</p><p style="margin: 0; font-size: 15px; line-height: 1.5; color: #2B3757;"><b style="color: #0A1433;">O próximo passo.</b> Você sai sabendo por onde começar.</p></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="momento has-slants" id="passo-2" aria-labelledby="momento-title">
+<div class="slant" style="left:-60px; width:120px; background:#2E6BFF; opacity:.18" aria-hidden="true"></div>
+<div class="container">
+<span class="kicker kicker--cyan">PASSO 02 · SEU MOMENTO</span>
+<h2 class="h-section" id="momento-title">Identificamos onde você está e o que vai <span class="text-blue">impulsionar seu faturamento.</span></h2>
+<p class="lead">Nem toda empresa precisa da mesma coisa. Às vezes falta estratégia, às vezes gestão, às vezes processo.</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 40px;">
+<div style="border: 1px solid rgba(201,210,230,.25); border-radius: 16px; padding: 24px;"><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 22px; color: #3DDCFF;">Estratégia</p><p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #C9D2E6;">Para onde crescer, que oferta priorizar, como precificar.</p></div>
+<div style="border: 1px solid rgba(201,210,230,.25); border-radius: 16px; padding: 24px;"><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 22px; color: #3DDCFF;">Gestão</p><p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #C9D2E6;">Indicadores, metas e uma rotina de decisão que não depende do dono.</p></div>
+<div style="border: 1px solid rgba(201,210,230,.25); border-radius: 16px; padding: 24px;"><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 22px; color: #3DDCFF;">Processos</p><p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #C9D2E6;">Fluxos, cadastros e sistema funcionando sem retrabalho.</p></div>
+</div>
+<p style="margin: 0 0 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.1em; color: #C9D2E6;">EXEMPLOS DE MOMENTO</p>
+<div class="stages" role="tablist" aria-label="Momento da empresa">
+<button class="stage" type="button" role="tab" aria-selected="true"><span class="stage__num">01</span><span class="stage__label">Gerencio em planilha</span></button>
+<button class="stage" type="button" role="tab" aria-selected="false"><span class="stage__num">02</span><span class="stage__label">Vou implantar um sistema</span></button>
+<button class="stage" type="button" role="tab" aria-selected="false"><span class="stage__num">03</span><span class="stage__label">Tenho sistema, mas não rende</span></button>
+<button class="stage" type="button" role="tab" aria-selected="false"><span class="stage__num">04</span><span class="stage__label">Cresci e perdi o controle</span></button>
+</div>
+<div class="stage-panel" id="stage-panel">
+<div class="stage-panel__main">
+<span class="stage-panel__tag">AINDA SEM SISTEMA</span>
+<h3>Estruturamos antes de informatizar.</h3>
+<p>Antes de pensar em sistema, organizamos o que já existe: processos, cadastros e regras. Você descobre o que faz sentido agora, inclusive se ainda não é hora de um ERP.</p>
+<a class="btn btn--primary" href="#agendar">Quero conversar sobre isso
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+</div>
+<div class="stage-panel__box">
+<h4>O que você recebe</h4>
+<ul class="checklist">
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>Mapa dos processos atuais</span></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>Planilhas padronizadas e confiáveis enquanto isso</span></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>Roteiro de quando e como adotar um sistema</span></li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+
+<section id="especialistas" style="background: #FFFFFF;">
+<div class="container" style="padding-block: 96px;">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px;">
+<div style="max-width: 720px;">
+<span class="kicker">PASSO 03 · QUEM TRABALHA COM VOCÊ</span>
+<h2 class="h-section">Gerentes de projetos que conhecem o seu sistema.</h2>
+<p class="lead">O desenho é de gestão. A execução fica com especialistas que já conduziram projetos no sistema que você usa.</p>
+</div>
+</div>
+<div style="margin-top: 40px; border: 1px solid #DCE2EF; border-radius: 20px; overflow: hidden;">
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center; padding: 26px 30px; border-bottom: 1px solid #DCE2EF;">
+<p style="margin: 0; width: 260px; flex-shrink: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 20px; color: #0A1433;">TOTVS RM</p>
+<p style="margin: 0; flex: 1 1 300px; font-size: 15px; line-height: 1.55; color: #2B3757;">Gerentes de projetos em backoffice, RH, educacional e imobiliário.</p>
+<p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #2456F0; background: #EAF0FF; border-radius: 999px; padding: 7px 14px;">GESTÃO DE PROJETOS</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center; padding: 26px 30px; border-bottom: 1px solid #DCE2EF;">
+<p style="margin: 0; width: 260px; flex-shrink: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 20px; color: #0A1433;">TOTVS Protheus</p>
+<p style="margin: 0; flex: 1 1 300px; font-size: 15px; line-height: 1.55; color: #2B3757;">Gerentes de projetos em financeiro, fiscal, compras e estoque.</p>
+<p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #2456F0; background: #EAF0FF; border-radius: 999px; padding: 7px 14px;">GESTÃO DE PROJETOS</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center; padding: 26px 30px; border-bottom: 1px solid #DCE2EF;">
+<p style="margin: 0; width: 260px; flex-shrink: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 20px; color: #0A1433;">Reforma Tributária</p>
+<p style="margin: 0; flex: 1 1 300px; font-size: 15px; line-height: 1.55; color: #2B3757;">Especialistas fiscais em CBS e IBS para a adequação de processos e cadastros.</p>
+<p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #2456F0; background: #EAF0FF; border-radius: 999px; padding: 7px 14px;">FISCAL E TRIBUTÁRIO</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center; padding: 26px 30px; background: #F2F4FA;">
+<p style="margin: 0; width: 260px; flex-shrink: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 20px; color: #0A1433;">Outros sistemas</p>
+<p style="margin: 0; flex: 1 1 300px; font-size: 15px; line-height: 1.55; color: #2B3757;">Usa outro ERP? Montamos o time certo para ele. Folha e RH com parceiro especializado.</p>
+<a href="#agendar" style="font-size: 14px; font-weight: 700; color: #2456F0;">Falar sobre o meu sistema →</a>
+</div>
+</div>
+</div>
+</section>
+
+<section id="passo-4" style="background: #F2F4FA;">
+<div class="container" style="padding-block: 96px;">
+<span class="kicker">PASSO 04 · ACOMPANHAMENTO</span>
+<h2 class="h-section" style="max-width: 820px;">Ficamos com você até sua operação andar sozinha.</h2>
+<p class="lead">O projeto não termina na entrega. A gente acompanha o dia a dia até o seu time conduzir a gestão com autonomia.</p>
+<div style="margin-top: 44px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; background: #FFFFFF; border: 1px solid #DCE2EF; border-radius: 20px; overflow: hidden;">
+<div style="padding: 30px; border-right: 1px solid #DCE2EF;">
+<div style="height: 8px; border-radius: 4px; background: #2E6BFF;"></div>
+<h3 style="margin: 20px 0 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 20px; color: #0A1433;">Implantar</h3>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">O novo processo entra em operação, com o time treinado.</p>
+</div>
+<div style="padding: 30px; border-right: 1px solid #DCE2EF;">
+<div style="height: 8px; border-radius: 4px; background: linear-gradient(90deg, #2E6BFF 60%, #DCE2EF 60%);"></div>
+<h3 style="margin: 20px 0 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 20px; color: #0A1433;">Acompanhar</h3>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">Encontros de acompanhamento, indicadores e ajustes até os números estabilizarem.</p>
+</div>
+<div style="padding: 30px;">
+<div style="height: 8px; border-radius: 4px; background: linear-gradient(90deg, #2E6BFF 25%, #DCE2EF 25%);"></div>
+<h3 style="margin: 20px 0 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 20px; color: #0A1433;">Andar sozinha</h3>
+<p style="margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">Seu time conduz a rotina com segurança. Esse é o objetivo.</p>
+</div>
+</div>
+<div style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; border-left: 4px solid #3DDCFF; background: #FFFFFF; border-radius: 0 16px 16px 0; padding: 22px 28px;">
+<p style="margin: 0; flex: 1 1 520px; font-size: 16px; line-height: 1.55; color: #2B3757;"><b style="color: #0A1433;">E depois, seguimos por perto.</b> A Reforma Tributária muda as regras em etapas até 2033 e o negócio continua crescendo. Quando surgir algo novo, quem já conhece a sua operação está a uma conversa de distância.</p>
+<a href="#agendar" style="font-size: 14px; font-weight: 700; color: #2456F0; white-space: nowrap;">Conversar sobre acompanhamento →</a>
+</div>
+</div>
+</section>
+
+<section id="quem-somos" style="background: #FFFFFF;">
+<div class="container" style="padding-block: 96px;">
+<span class="kicker">QUEM CONDUZ</span>
+<h2 class="h-section" style="max-width: 880px;">Mais de 15 anos colocando gestão e sistema para trabalhar juntos.</h2>
+<div style="margin-top: 44px; display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch;">
+<div style="flex: 1 1 340px; min-width: 0; background: #060D2B; color: #FFFFFF; border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 18px;">
+<div style="display: flex; gap: 16px; align-items: center;">
+<p style="margin: 0; width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; background: #2E6BFF; display: flex; align-items: center; justify-content: center; font-family: Sora, sans-serif; font-weight: 800; font-size: 22px;">ES</p>
+<div><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 21px;">Estevão Sant Anna</p><p style="margin: 4px 0 0; font-size: 14px; color: #C9D2E6;">Cofundador da HelpNow · FGV</p></div>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9D2E6;">Lidera projetos de gestão, processos e implantação de ERP desde 2008, em backoffice, fiscal, contábil, financeiro, RH e integração entre sistemas. Hoje à frente da adequação de empresas à Reforma Tributária.</p>
+<div style="margin-top: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border-top: 1px solid rgba(201,210,230,.2); padding-top: 18px;">
+<div><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 26px; color: #3DDCFF;">2017</p><p style="margin: 2px 0 0; font-size: 12px; color: #C9D2E6;">HelpNow fundada</p></div>
+<div><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 26px; color: #3DDCFF;">15+</p><p style="margin: 2px 0 0; font-size: 12px; color: #C9D2E6;">anos em projetos</p></div>
+<div><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 26px; color: #3DDCFF;">28</p><p style="margin: 2px 0 0; font-size: 12px; color: #C9D2E6;">empresas em um CSC</p></div>
+</div>
+</div>
+<div style="flex: 2 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+<p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.1em; color: #2456F0;">PROJETOS QUE JÁ CONDUZIMOS</p>
+<div style="border: 1px solid #DCE2EF; border-radius: 16px; padding: 22px 26px;"><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 18px; color: #0A1433;">Grupo com 28 empresas</p><p style="margin: 6px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">Criação de um Centro de Serviço Compartilhado, plano de contas único e consolidação contábil e fiscal do grupo no sistema.</p></div>
+<div style="border: 1px solid #DCE2EF; border-radius: 16px; padding: 22px 26px;"><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 18px; color: #0A1433;">Escritório de advocacia de grande porte</p><p style="margin: 6px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">Integração do sistema jurídico com o backoffice, com dados sincronizados entre áreas e time treinado para operar.</p></div>
+<div style="border: 1px solid #DCE2EF; border-radius: 16px; padding: 22px 26px;"><p style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: 18px; color: #0A1433;">Financeiro sem digitação</p><p style="margin: 6px 0 0; font-size: 15px; line-height: 1.55; color: #2B3757;">Pagamentos e cobranças por integração bancária automatizada, e obrigações fiscais geradas direto pelo sistema.</p></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="segmentos" id="para-quem" style="background: #F2F4FA;">
+<div class="container">
+<span class="kicker">PARA QUEM</span>
+<h2 class="h-section">Do negócio local à empresa com várias áreas.</h2>
+<ul class="segs" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 32px;">
+<li class="seg seg--navy"><span class="seg__mark" aria-hidden="true"></span><h3>Médias e grandes empresas</h3><p>Reforma Tributária, processos entre áreas, implantação e integração de sistemas. Projetos com gerente dedicado e entregas por etapa.</p><span class="seg__erp">DIAGNÓSTICO DE IMPACTO DA REFORMA</span></li>
+<li class="seg seg--blue"><span class="seg__mark" aria-hidden="true"></span><h3>Negócios locais</h3><p>Sair da planilha, organizar o financeiro, definir indicadores e criar uma rotina de gestão que não depende só do dono.</p><span class="seg__erp">DIAGNÓSTICO GRATUITO DE 30 MIN</span></li>
+</ul>
+</div>
+</section>
+
+<section id="integracao" style="background: #060D2B; color: #FFFFFF;">
+<div class="container" style="padding-block: 96px; display: flex; flex-wrap: wrap; gap: 56px; align-items: center;">
+<div style="flex: 999 1 460px; min-width: 0;">
+<span class="kicker kicker--cyan">INTEGRAÇÃO ENTRE SISTEMAS E IA</span>
+<h2 class="h-section" style="color: #FFFFFF;">Sistemas que conversam, rotinas que <span class="text-blue">rodam sozinhas.</span></h2>
+<p class="lead" style="color: #C9D2E6;">Quando o processo pede, levamos a tecnologia junto.</p>
+<div style="margin-top: 28px; display: flex; flex-direction: column; gap: 18px;">
+<div style="display: flex; gap: 16px;"><p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #3DDCFF; width: 28px; flex-shrink: 0;">01</p><p style="margin: 0; font-size: 16px; line-height: 1.55; color: #C9D2E6;"><b style="color: #FFFFFF;">Integração entre sistemas.</b> ERP, CRM, bancos e planilhas trocando dados sem digitação dupla.</p></div>
+<div style="display: flex; gap: 16px;"><p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #3DDCFF; width: 28px; flex-shrink: 0;">02</p><p style="margin: 0; font-size: 16px; line-height: 1.55; color: #C9D2E6;"><b style="color: #FFFFFF;">Automação de rotinas.</b> Lançamentos, conciliações e relatórios sem esforço manual.</p></div>
+<div style="display: flex; gap: 16px;"><p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #3DDCFF; width: 28px; flex-shrink: 0;">03</p><p style="margin: 0; font-size: 16px; line-height: 1.55; color: #C9D2E6;"><b style="color: #FFFFFF;">IA aplicada à gestão.</b> Assistentes que respondem sobre os dados da empresa e aceleram análises e documentos.</p></div>
+</div>
+</div>
+<div style="flex: 1 1 440px; min-width: 0; background: #0A1433; border: 1px solid #1E2A5A; border-radius: 24px; padding: 28px;">
+<svg viewBox="0 0 520 360" width="100%" style="display: block;" role="img" aria-label="Sistemas da empresa conectados ao seu processo"><path d="M168 68 C 205 68, 205 180, 222 180" fill="none" stroke="#2E6BFF" stroke-width="2"/><circle cx="168" cy="68" r="4" fill="#2E6BFF"/><rect x="8" y="40" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="26" y="64" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">ERP</text><text x="26" y="82" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">TOTVS e outros</text><path d="M168 180 C 205 180, 205 180, 222 180" fill="none" stroke="#2E6BFF" stroke-width="2"/><circle cx="168" cy="180" r="4" fill="#2E6BFF"/><rect x="8" y="152" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="26" y="176" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">Bancos</text><text x="26" y="194" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">pagamentos e extratos</text><path d="M168 292 C 205 292, 205 180, 222 180" fill="none" stroke="#2E6BFF" stroke-width="2"/><circle cx="168" cy="292" r="4" fill="#2E6BFF"/><rect x="8" y="264" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="26" y="288" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">Planilhas</text><text x="26" y="306" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">e arquivos</text><path d="M352 68 C 315 68, 315 180, 298 180" fill="none" stroke="#3DDCFF" stroke-width="2"/><circle cx="352" cy="68" r="4" fill="#3DDCFF"/><rect x="352" y="40" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="370" y="64" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">CRM</text><text x="370" y="82" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">vendas e clientes</text><path d="M352 180 C 315 180, 315 180, 298 180" fill="none" stroke="#3DDCFF" stroke-width="2"/><circle cx="352" cy="180" r="4" fill="#3DDCFF"/><rect x="352" y="152" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="370" y="176" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">BI</text><text x="370" y="194" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">indicadores</text><path d="M352 292 C 315 292, 315 180, 298 180" fill="none" stroke="#3DDCFF" stroke-width="2"/><circle cx="352" cy="292" r="4" fill="#3DDCFF"/><rect x="352" y="264" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="370" y="288" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">IA</text><text x="370" y="306" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">assistentes e automação</text><rect x="214" y="132" width="92" height="96" rx="18" fill="#2E6BFF"/><path d="M244 166 h28 l-6 -6 M276 194 h-28 l6 6" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="260" y="218" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="10" letter-spacing="1" fill="#FFFFFF">SEU PROCESSO</text></svg>
+</div>
+</div>
+</section>
+
+<section class="cta has-slants" id="agendar" aria-labelledby="cta-title">
+<div class="slant" style="right:8%; width:140px; background:#060D2B; opacity:.25" aria-hidden="true"></div>
+<div class="slant" style="right:-1%; width:140px; background:#FFFFFF; opacity:.14" aria-hidden="true"></div>
+<div class="container">
+<div class="cta__clock" aria-hidden="true"><svg class="chrono chrono--big" viewBox="0 0 200 224" fill="none" focusable="false"><rect x="86" y="6" width="28" height="14" rx="4" fill="#3DDCFF"></rect><rect x="94" y="19" width="12" height="18" fill="#060D2B"></rect><g transform="rotate(42 100 124)"><rect x="93" y="14" width="14" height="16" rx="3" fill="#3DDCFF"></rect><rect x="96" y="28" width="8" height="12" fill="#060D2B"></rect></g><circle cx="100" cy="124" r="88" fill="#060D2B" stroke="#FFFFFF" stroke-width="6" stroke-opacity=".85"></circle><path d="M100.0 66.0L100.0 52.0M129.0 73.8L136.0 61.6M150.2 95.0L162.4 88.0M158.0 124.0L172.0 124.0M150.2 153.0L162.4 160.0M129.0 174.2L136.0 186.4M100.0 182.0L100.0 196.0M71.0 174.2L64.0 186.4M49.8 153.0L37.6 160.0M42.0 124.0L28.0 124.0M49.8 95.0L37.6 88.0M71.0 73.8L64.0 61.6" stroke="#3DDCFF" stroke-width="3.8" stroke-linecap="round"></path><circle cx="100" cy="124" r="80" transform="rotate(-90 100 124)" stroke="#FFFFFF" stroke-opacity=".16" stroke-width="5"></circle><circle cx="100" cy="124" r="80" transform="rotate(-90 100 124)" pathLength="100" stroke="#3DDCFF" stroke-width="5" stroke-linecap="round" stroke-dasharray="100 100" stroke-dashoffset="25"></circle><text x="100" y="139" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="54" letter-spacing="-2" fill="#FFFFFF">30</text><text x="100" y="161" text-anchor="middle" font-family="Sora, sans-serif" font-weight="700" font-size="11.5" letter-spacing="2.4" fill="#3DDCFF">MINUTOS</text></svg></div>
+<div class="cta__text">
+<h2 id="cta-title">30 minutos com um especialista HelpNow.</h2>
+<p>Traga um problema real da sua gestão. Você sai com um diagnóstico claro e o próximo passo definido.</p>
+<div class="cta__btns">
+<a class="btn btn--dark btn--lg" href="#agendar">Escolher data e horário
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+<a class="btn btn--wa btn--wa-blue btn--lg" href="#agendar">Fale conosco</a>
+</div>
+<p style="margin: 18px 0 0; font-size: 16px;">Empresa de médio ou grande porte? <a href="#reforma" style="color: #FFFFFF; font-weight: 700; text-decoration: underline;">Peça o Diagnóstico de impacto da Reforma</a>.</p>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+<div class="container">
+<div class="footer__brand">
+<a class="brand" href="#conteudo">
+<svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="66,104 84,104 98,16 80,16" fill="#E6EBF5"></polygon><path d="M38,76 Q66,56 102,52" fill="none" stroke="#060D2B" stroke-width="25" stroke-linecap="round"></path><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#060D2B" stroke="#060D2B" stroke-width="11" stroke-linejoin="round"></polygon><polygon points="26,104 44,104 58,16 40,16" fill="#2E6BFF"></polygon><path d="M38,76 Q66,56 102,52" fill="none" stroke="#2E6BFF" stroke-width="13" stroke-linecap="round"></path><polygon points="117.9,50.2 101.3,64.1 98.7,40.3" fill="#2E6BFF" stroke="#2E6BFF" stroke-width="2" stroke-linejoin="round"></polygon></svg>
+<span><span class="wordmark">HELP<span>NOW</span></span><span class="footer__sub" style="display:block">CONSULTORIA E GESTÃO DE NEGÓCIOS</span></span>
+</a>
+<p class="footer__slogan">Juntos vamos <strong>mais longe!</strong></p>
+</div>
+<nav class="footer__col" aria-label="Navegação do rodapé">
+<h2>Navegação</h2>
+<a href="#reforma">Reforma Tributária</a>
+<a href="#como">Como trabalhamos</a>
+<a href="#especialistas">Especialistas</a>
+<a href="#quem-somos">Quem somos</a>
+<a href="#para-quem">Para quem</a>
+<a href="#integracao">Integração e IA</a>
+<a href="#agendar">Agendamento</a>
+</nav>
+<div class="footer__col">
+<h2>Contato</h2>
+<a href="mailto:contato@helpnowsolucoes.com.br">contato@helpnowsolucoes.com.br</a>
+<a class="ig-pill" href="https://instagram.com/help_nowsolucoes/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.3" cy="6.7" r=".6" fill="currentColor"></circle></svg><span>@help_nowsolucoes</span></a>
+</div>
+</div>
+<div class="footer__bottom">
+<div class="container">
+<span>© 2026 HelpNow Soluções · <span class="nowrap">CNPJ 49.739.083/0001-24</span> · <span class="nowrap">helpnowsolucoes.com.br</span></span>
+<span>TOTVS, RM e Protheus são marcas da TOTVS S.A.</span>
+</div>
+</div>
+</footer>
+
+</div>
+</body>
+</html>
