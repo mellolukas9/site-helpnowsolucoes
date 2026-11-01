@@ -20,7 +20,7 @@
 
   <link rel="preload" href="/assets/fonts/sora.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/css/styles.css?v=14">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=15">
 
   <script type="application/ld+json">
   {
@@ -109,28 +109,32 @@
     <h2 class="h-section" id="como-title">Do primeiro contato à operação rodando sozinha, em quatro passos.</h2>
     <ol class="steps">
       <li class="step step--first">
-        <p class="step__n" aria-hidden="true">01</p>
-        <h3>Reunião de diagnóstico</h3>
-        <p>30 minutos para entender o seu negócio e o problema real.</p>
-        <a class="link-arrow" href="#passo-1">Ver detalhes →</a>
+        <a class="step__card" href="#passo-1">
+          <span class="step__n" aria-hidden="true">01</span>
+          <span class="step__body"><h3>Reunião de diagnóstico</h3><p>30 minutos para entender o seu negócio e o problema real.</p></span>
+          <span class="step__go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+        </a>
       </li>
       <li class="step">
-        <p class="step__n" aria-hidden="true">02</p>
-        <h3>Seu momento</h3>
-        <p>Identificamos se o que destrava o faturamento é estratégia, gestão ou processo.</p>
-        <a class="link-arrow" href="#passo-2">Ver detalhes →</a>
+        <a class="step__card" href="#passo-2">
+          <span class="step__n" aria-hidden="true">02</span>
+          <span class="step__body"><h3>Seu momento</h3><p>Identificamos se o que destrava o faturamento é estratégia, gestão ou processo.</p></span>
+          <span class="step__go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+        </a>
       </li>
       <li class="step">
-        <p class="step__n" aria-hidden="true">03</p>
-        <h3>Especialistas no projeto</h3>
-        <p>Gerentes de projetos que conhecem o seu sistema conduzem a execução.</p>
-        <a class="link-arrow" href="#especialistas">Ver detalhes →</a>
+        <a class="step__card" href="#especialistas">
+          <span class="step__n" aria-hidden="true">03</span>
+          <span class="step__body"><h3>Especialistas no projeto</h3><p>Gerentes de projetos que conhecem o seu sistema conduzem a execução.</p></span>
+          <span class="step__go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+        </a>
       </li>
       <li class="step">
-        <p class="step__n" aria-hidden="true">04</p>
-        <h3>Ficamos até andar sozinha</h3>
-        <p>Acompanhamos indicadores e rotina até o seu time conduzir sem a gente.</p>
-        <a class="link-arrow" href="#passo-4">Ver detalhes →</a>
+        <a class="step__card" href="#passo-4">
+          <span class="step__n" aria-hidden="true">04</span>
+          <span class="step__body"><h3>Ficamos até andar sozinha</h3><p>Acompanhamos indicadores e rotina até o seu time conduzir sem a gente.</p></span>
+          <span class="step__go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+        </a>
       </li>
     </ol>
   </div>
@@ -202,30 +206,31 @@
 
 <!-- ================= 6. PASSO 03 · ESPECIALISTAS ================= -->
 <section class="sec sec--white" id="especialistas" aria-labelledby="esp-title">
-  <div class="container">
-    <span class="kicker">PASSO 03 · QUEM TRABALHA COM VOCÊ</span>
-    <h2 class="h-section" id="esp-title">Gerentes de projetos que conhecem o seu sistema.</h2>
-    <p class="lead">O desenho é de gestão. A execução fica com especialistas que já conduziram projetos no sistema que você usa.</p>
+  <div class="container esp">
+    <div class="esp__side">
+      <span class="kicker">PASSO 03 · QUEM TRABALHA COM VOCÊ</span>
+      <h2 class="h-section" id="esp-title">Gerentes de projetos que conhecem o seu sistema.</h2>
+      <p class="lead">O desenho é de gestão. A execução fica com especialistas que já conduziram projetos no sistema que você usa.</p>
+      <a class="btn btn--primary btn--lg" href="https://wa.me/5521968441647?text=Ol%C3%A1!%20Quero%20agendar%20um%20diagn%C3%B3stico%20gratuito%20com%20a%20Help%20Now." target="_blank" rel="noopener">Falar sobre o meu sistema
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
     <div class="specs">
       <div class="spec">
-        <h3>TOTVS RM</h3>
-        <p>Gerentes de projetos em backoffice, RH, educacional e imobiliário.</p>
-        <span class="spec__tag">GESTÃO DE PROJETOS</span>
+        <div class="spec__head"><h3>TOTVS RM</h3><span class="spec__tag">GESTÃO DE PROJETOS</span></div>
+        <ul class="spec__chips" aria-label="Gerentes de projetos em"><li>Backoffice</li><li>RH</li><li>Educacional</li><li>Imobiliário</li></ul>
       </div>
       <div class="spec">
-        <h3>TOTVS Protheus</h3>
-        <p>Gerentes de projetos em financeiro, fiscal, compras e estoque.</p>
-        <span class="spec__tag">GESTÃO DE PROJETOS</span>
+        <div class="spec__head"><h3>TOTVS Protheus</h3><span class="spec__tag">GESTÃO DE PROJETOS</span></div>
+        <ul class="spec__chips" aria-label="Gerentes de projetos em"><li>Financeiro</li><li>Fiscal</li><li>Compras</li><li>Estoque</li></ul>
       </div>
-      <div class="spec">
-        <h3>Reforma Tributária</h3>
-        <p>Especialistas fiscais em CBS e IBS para a adequação de processos e cadastros.</p>
-        <span class="spec__tag">FISCAL E TRIBUTÁRIO</span>
+      <div class="spec spec--tax">
+        <div class="spec__head"><h3>Reforma Tributária</h3><span class="spec__tag">FISCAL E TRIBUTÁRIO</span></div>
+        <ul class="spec__chips" aria-label="Especialistas fiscais em"><li>CBS</li><li>IBS</li><li>Processos</li><li>Cadastros</li></ul>
       </div>
-      <div class="spec">
-        <h3>Outros sistemas</h3>
+      <div class="spec spec--other">
+        <div class="spec__head"><h3>Outros sistemas</h3></div>
         <p>Usa outro ERP? Montamos o time certo para ele. Folha e RH com parceiro especializado.</p>
-        <a class="link-arrow" href="https://wa.me/5521968441647?text=Ol%C3%A1!%20Quero%20agendar%20um%20diagn%C3%B3stico%20gratuito%20com%20a%20Help%20Now." target="_blank" rel="noopener">Falar sobre o meu sistema →</a>
+        <a class="btn btn--outline btn--sm" href="https://wa.me/5521968441647?text=Ol%C3%A1!%20Quero%20agendar%20um%20diagn%C3%B3stico%20gratuito%20com%20a%20Help%20Now." target="_blank" rel="noopener">Falar sobre o meu sistema →</a>
       </div>
     </div>
   </div>
@@ -316,18 +321,19 @@
       </ul>
     </div>
     <div class="split__aside diagram">
-      <svg viewBox="0 0 520 360" role="img" aria-label="Sistemas da empresa conectados ao seu processo: ERP, bancos, planilhas, CRM, BI e IA"><path d="M168 68 C 205 68, 205 180, 222 180" fill="none" stroke="#2E6BFF" stroke-width="2"/><circle cx="168" cy="68" r="4" fill="#2E6BFF"/><rect x="8" y="40" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="26" y="64" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">ERP</text><text x="26" y="82" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">seu sistema de gestão</text><path d="M168 180 C 205 180, 205 180, 222 180" fill="none" stroke="#2E6BFF" stroke-width="2"/><circle cx="168" cy="180" r="4" fill="#2E6BFF"/><rect x="8" y="152" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="26" y="176" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">Bancos</text><text x="26" y="194" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">pagamentos e extratos</text><path d="M168 292 C 205 292, 205 180, 222 180" fill="none" stroke="#2E6BFF" stroke-width="2"/><circle cx="168" cy="292" r="4" fill="#2E6BFF"/><rect x="8" y="264" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="26" y="288" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">Planilhas</text><text x="26" y="306" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">e arquivos</text><path d="M352 68 C 315 68, 315 180, 298 180" fill="none" stroke="#3DDCFF" stroke-width="2"/><circle cx="352" cy="68" r="4" fill="#3DDCFF"/><rect x="352" y="40" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="370" y="64" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">CRM</text><text x="370" y="82" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">vendas e clientes</text><path d="M352 180 C 315 180, 315 180, 298 180" fill="none" stroke="#3DDCFF" stroke-width="2"/><circle cx="352" cy="180" r="4" fill="#3DDCFF"/><rect x="352" y="152" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="370" y="176" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">BI</text><text x="370" y="194" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">indicadores</text><path d="M352 292 C 315 292, 315 180, 298 180" fill="none" stroke="#3DDCFF" stroke-width="2"/><circle cx="352" cy="292" r="4" fill="#3DDCFF"/><rect x="352" y="264" width="160" height="56" rx="12" fill="#0E1A44" stroke="#2A3A78"/><text x="370" y="288" font-family="Sora, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">IA</text><text x="370" y="306" font-family="Manrope, sans-serif" font-size="11.5" fill="#9FB0D6">assistentes e automação</text><rect x="214" y="132" width="92" height="96" rx="18" fill="#2E6BFF"/><path d="M244 166 h28 l-6 -6 M276 194 h-28 l6 6" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="260" y="218" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="9" letter-spacing=".4" fill="#FFFFFF">SEU PROCESSO</text></svg>
-      <!-- Celular: mesma informação do diagrama, em lista legível -->
+      <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs><symbol id="i-db" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/></symbol><symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></symbol><symbol id="i-sheet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></symbol><symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></symbol><symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 16v4M17 18h4"/></symbol><symbol id="i-swap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h13l-3-3M17 16H4l3 3"/></symbol></defs></svg>
+      <svg class="diagram__svg" viewBox="0 0 640 440" role="img" aria-label="Sistemas da empresa conectados ao seu processo: ERP, bancos, planilhas, CRM, BI e IA"><defs><linearGradient id="gl" gradientUnits="userSpaceOnUse" x1="210" y1="0" x2="280" y2="0"><stop offset="0" stop-color="#2E6BFF"/><stop offset="1" stop-color="#3DDCFF"/></linearGradient><linearGradient id="gr" gradientUnits="userSpaceOnUse" x1="430" y1="0" x2="360" y2="0"><stop offset="0" stop-color="#2E6BFF"/><stop offset="1" stop-color="#3DDCFF"/></linearGradient><radialGradient id="glow"><stop offset="0" stop-color="#2E6BFF" stop-opacity=".55"/><stop offset=".55" stop-color="#2E6BFF" stop-opacity=".18"/><stop offset="1" stop-color="#2E6BFF" stop-opacity="0"/></radialGradient><radialGradient id="hubfill" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#5B8BFF"/><stop offset="1" stop-color="#2E6BFF"/></radialGradient></defs><path d="M222 56 C 262 56, 262 120, 277.6 177.6" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/><circle cx="222" cy="56" r="4" fill="#2E6BFF"/><circle cx="277.6" cy="177.6" r="4" fill="#3DDCFF"/><path d="M214 220 L 260 220" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/><circle cx="214" cy="220" r="4" fill="#2E6BFF"/><circle cx="260" cy="220" r="4" fill="#3DDCFF"/><path d="M222 384 C 262 384, 262 320, 277.6 262.4" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/><circle cx="222" cy="384" r="4" fill="#2E6BFF"/><circle cx="277.6" cy="262.4" r="4" fill="#3DDCFF"/><path d="M362.4 177.6 C 378 120, 378 56, 418 56" fill="none" stroke="url(#gr)" stroke-width="2" stroke-linecap="round"/><circle cx="418" cy="56" r="4" fill="#2E6BFF"/><circle cx="362.4" cy="177.6" r="4" fill="#3DDCFF"/><path d="M380 220 L 426 220" fill="none" stroke="url(#gr)" stroke-width="2" stroke-linecap="round"/><circle cx="426" cy="220" r="4" fill="#2E6BFF"/><circle cx="380" cy="220" r="4" fill="#3DDCFF"/><path d="M362.4 262.4 C 378 320, 378 384, 418 384" fill="none" stroke="url(#gr)" stroke-width="2" stroke-linecap="round"/><circle cx="418" cy="384" r="4" fill="#2E6BFF"/><circle cx="362.4" cy="262.4" r="4" fill="#3DDCFF"/><path class="dg-pulse" style="--d:0.0s" d="M222 56 C 262 56, 262 120, 277.6 177.6" pathLength="100" fill="none" stroke="#FFFFFF" stroke-width="3"/><path class="dg-pulse" style="--d:0.7s" d="M214 220 L 260 220" pathLength="100" fill="none" stroke="#FFFFFF" stroke-width="3"/><path class="dg-pulse" style="--d:1.4s" d="M222 384 C 262 384, 262 320, 277.6 262.4" pathLength="100" fill="none" stroke="#FFFFFF" stroke-width="3"/><path class="dg-pulse" style="--d:2.1s" d="M362.4 177.6 C 378 120, 378 56, 418 56" pathLength="100" fill="none" stroke="#FFFFFF" stroke-width="3"/><path class="dg-pulse" style="--d:2.8s" d="M380 220 L 426 220" pathLength="100" fill="none" stroke="#FFFFFF" stroke-width="3"/><path class="dg-pulse" style="--d:3.5s" d="M362.4 262.4 C 378 320, 378 384, 418 384" pathLength="100" fill="none" stroke="#FFFFFF" stroke-width="3"/><circle cx="320" cy="220" r="100" fill="url(#glow)"/><circle cx="320" cy="220" r="60" fill="url(#hubfill)"/><circle cx="320" cy="220" r="60" fill="none" stroke="#FFFFFF" stroke-opacity=".28" stroke-width="1.5"/><use href="#i-swap" x="308" y="172" width="24" height="24" color="#FFFFFF"/><text text-anchor="middle" class="dg-h" fill="#FFFFFF"><tspan x="320" y="216">SEU</tspan><tspan x="320" y="234">PROCESSO</tspan></text><g><rect x="16" y="24" width="206" height="64" rx="14" fill="#0A1433" stroke="#2A3A78"/><use href="#i-db" x="32" y="37" width="20" height="20" color="#3DDCFF"/><text x="60" y="53" class="dg-t">ERP</text><text x="32" y="75" class="dg-s">seu sistema de gestão</text></g><g><rect x="8" y="188" width="206" height="64" rx="14" fill="#0A1433" stroke="#2A3A78"/><use href="#i-card" x="24" y="201" width="20" height="20" color="#3DDCFF"/><text x="52" y="217" class="dg-t">Bancos</text><text x="24" y="239" class="dg-s">pagamentos e extratos</text></g><g><rect x="16" y="352" width="206" height="64" rx="14" fill="#0A1433" stroke="#2A3A78"/><use href="#i-sheet" x="32" y="365" width="20" height="20" color="#3DDCFF"/><text x="60" y="381" class="dg-t">Planilhas</text><text x="32" y="403" class="dg-s">e arquivos</text></g><g><rect x="418" y="24" width="206" height="64" rx="14" fill="#0A1433" stroke="#2A3A78"/><use href="#i-users" x="434" y="37" width="20" height="20" color="#3DDCFF"/><text x="462" y="53" class="dg-t">CRM</text><text x="434" y="75" class="dg-s">vendas e clientes</text></g><g><rect x="426" y="188" width="206" height="64" rx="14" fill="#0A1433" stroke="#2A3A78"/><use href="#i-chart" x="442" y="201" width="20" height="20" color="#3DDCFF"/><text x="470" y="217" class="dg-t">BI</text><text x="442" y="239" class="dg-s">indicadores</text></g><g><rect x="418" y="352" width="206" height="64" rx="14" fill="#0A1433" stroke="#2A3A78"/><use href="#i-spark" x="434" y="365" width="20" height="20" color="#3DDCFF"/><text x="462" y="381" class="dg-t">IA</text><text x="434" y="403" class="dg-s">assistentes e automação</text></g></svg>
+      <!-- Celular: mesma informação do diagrama, em grade 2×3 -->
       <div class="diagram__list">
-        <p class="diagram__hub">Seu processo</p>
+        <p class="diagram__hub"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-swap"/></svg>Seu processo</p>
         <div class="diagram__links" aria-hidden="true"></div>
         <ul class="diagram__nodes" aria-label="Sistemas conectados ao seu processo">
-          <li><strong>ERP</strong><span>seu sistema de gestão</span></li>
-          <li><strong>Bancos</strong><span>pagamentos e extratos</span></li>
-          <li><strong>Planilhas</strong><span>e arquivos</span></li>
-          <li><strong>CRM</strong><span>vendas e clientes</span></li>
-          <li><strong>BI</strong><span>indicadores</span></li>
-          <li><strong>IA</strong><span>assistentes e automação</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-db"/></svg><strong>ERP</strong><span>seu sistema de gestão</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-card"/></svg><strong>Bancos</strong><span>pagamentos e extratos</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sheet"/></svg><strong>Planilhas</strong><span>e arquivos</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-users"/></svg><strong>CRM</strong><span>vendas e clientes</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chart"/></svg><strong>BI</strong><span>indicadores</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-spark"/></svg><strong>IA</strong><span>assistentes e automação</span></li>
         </ul>
       </div>
     </div>
@@ -395,7 +401,7 @@
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
 </a>
 
-<script src="/assets/js/chrono.js?v=14" defer></script>
-<script src="/assets/js/main.js?v=14" defer></script>
+<script src="/assets/js/chrono.js?v=15" defer></script>
+<script src="/assets/js/main.js?v=15" defer></script>
 </body>
 </html>
